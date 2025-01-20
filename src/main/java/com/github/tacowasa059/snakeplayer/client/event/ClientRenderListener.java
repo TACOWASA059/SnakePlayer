@@ -37,13 +37,25 @@ public class ClientRenderListener {
      */
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event){
-        event.setCanceled(true);
+        Minecraft minecraft = Minecraft.getInstance();
+        AbstractClientPlayer player = minecraft.player;
+
+        if (minecraft.player == null) {
+            return;
+        }
+        IPlayerData playerData = (IPlayerData) player;
+        if(!playerData.getIsSnake()){
+            return;
+        }
+        event.setCanceled(true); //snakeのときはキャンセル
     }
     @SubscribeEvent
     public static void onClientRender(RenderPlayerEvent.Pre event){
         Player player = event.getEntity();
         if(player.isSpectator())return;
         IPlayerData playerData = (IPlayerData) player;
+        if(!playerData.getIsSnake())return;
+
         List<PlayerPart> playerParts = playerData.getPlayerParts();
 
         float partialTicks = event.getPartialTick();
@@ -54,33 +66,37 @@ public class ClientRenderListener {
         Vec3 playerVec = player.getPosition(partialTicks);
 
         int overlay = OverlayTexture.NO_OVERLAY;
-        if(player.hurtTime > 0 || player.deathTime > 0)overlay=OverlayTexture.pack(OverlayTexture.u(event.getPartialTick()), OverlayTexture.v(player.hurtTime > 0 || player.deathTime > 0));
+        if(player.hurtTime > 0 || player.deathTime > 0)overlay=OverlayTexture.pack(
+                OverlayTexture.u(event.getPartialTick()), OverlayTexture.v(player.hurtTime > 0 || player.deathTime > 0));
 
 
         ResourceLocation location = ((AbstractClientPlayer)player).getSkinTextureLocation();
 
+        float radius = playerData.getHeadSize()/2;
+
         poseStack.pushPose();
-        poseStack.translate(0, 0.35f,0);
+        poseStack.translate(0, radius,0);
 
         float yaw = player.getYRot();    // 水平方向の回転
         float pitch = player.getXRot();  // 上下方向の回転
 
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw)); // Y軸回りの回転
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch)); // Z軸回りの回転
-        SphereRenderer.drawTexturedSphere(poseStack,bufferSource, location,0.7f,8,0,0, lightmap,true, overlay);
+        SphereRenderer.drawTexturedSphere(poseStack,bufferSource, location, radius,8,0,0, lightmap,true, overlay);
         poseStack.popPose();
 
 
 //        double displace = playerVec.subtract(player.getPosition(0)).length();
 
         int i = 0;
+        float segmentsize = playerData.getBodySegmentSize()/2;
         for(PlayerPart playerPart:playerParts){
-            Vec3 vec3 = playerPart.getPosition(0).subtract(playerVec).add(0,0.5,0);
+            Vec3 vec3 = playerPart.getPosition(partialTicks).subtract(playerVec).add(0,segmentsize,0);
             Vec3 targetVec3 = player.getPosition(partialTicks);
             if(i>0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);
-            targetVec3 = targetVec3.subtract(playerVec).add(0,0.5,0);
+            targetVec3 = targetVec3.subtract(playerVec).add(0,segmentsize,0);
 
-            renderOctagonalPrism((AbstractClientPlayer) player,poseStack, bufferSource, vec3, targetVec3, lightmap, overlay);
+            renderOctagonalPrism((AbstractClientPlayer) player, poseStack, bufferSource, segmentsize, vec3, targetVec3, lightmap, overlay);
             i++;
         }
 
@@ -90,21 +106,24 @@ public class ClientRenderListener {
     @SubscribeEvent
     public static void onFirstPerspectiveRender(RenderLevelStageEvent event) {
         if(!event.getStage().equals(RenderLevelStageEvent.Stage.AFTER_WEATHER))return;
-
         Minecraft minecraft = Minecraft.getInstance();
+        AbstractClientPlayer player = minecraft.player;
+
         if (minecraft.player == null || minecraft.options.getCameraType() != CameraType.FIRST_PERSON) {
             return;
         }
+        IPlayerData playerData = (IPlayerData) player;
+        if(!playerData.getIsSnake())return;
 
-        AbstractClientPlayer player = minecraft.player;
 
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource bufferSource = minecraft.renderBuffers().bufferSource();
 
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
 
-        IPlayerData playerData = (IPlayerData) player;
+
         List<PlayerPart> playerParts = playerData.getPlayerParts();
+        float radius = playerData.getHeadSize()/2;
 
         float partialTicks = event.getPartialTick();
 
@@ -116,14 +135,15 @@ public class ClientRenderListener {
         RenderSystem.getModelViewStack().popPose();  // 行列を元に戻す
         RenderSystem.applyModelViewMatrix();  // 元の状態を再適用
 
+        float segmentsize = playerData.getBodySegmentSize()/2;
         int i = 0;
         for(PlayerPart playerPart:playerParts){
-            Vec3 vec3 = playerPart.getPosition(0).subtract(cameraPos).add(0,0.5,0);
+            Vec3 vec3 = playerPart.getPosition(0).subtract(cameraPos).add(0,radius,0);
             Vec3 targetVec3 = player.getPosition(partialTicks);
             if(i > 0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);
-            targetVec3 = targetVec3.subtract(cameraPos).add(0,0.5,0);
+            targetVec3 = targetVec3.subtract(cameraPos).add(0,radius,0);
 
-            renderOctagonalPrism(player, poseStack, bufferSource, vec3, targetVec3, lightmap, overlay);
+            renderOctagonalPrism(player, poseStack, bufferSource, segmentsize, vec3, targetVec3, lightmap, overlay);
             i++;
         }
 
@@ -142,11 +162,10 @@ public class ClientRenderListener {
      * @param lightmap
      * @param overlay
      */
-    private static void renderOctagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, Vec3 base, Vec3 target, int lightmap, int overlay) {
+    private static void renderOctagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
         ResourceLocation location = player.getSkinTextureLocation();
 
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucent(location)); //cullingあり
-        float radius = 0.5f; // 半径
 
         // 座標系を平行移動して回転
         poseStack.pushPose();

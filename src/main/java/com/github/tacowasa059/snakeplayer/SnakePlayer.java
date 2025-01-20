@@ -1,7 +1,9 @@
 package com.github.tacowasa059.snakeplayer;
 
+import com.github.tacowasa059.snakeplayer.network.ModNetworking;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(SnakePlayer.MODID)
@@ -9,9 +11,13 @@ public class SnakePlayer {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "snakeplayer";
-
+    @SuppressWarnings("removal")
     public SnakePlayer() {
-        // Register ourselves for server and other game events we are interested in
+        FMLJavaModLoadingContext configContext = FMLJavaModLoadingContext.get();
+        configContext.getModEventBus().register(this);
+
+
         MinecraftForge.EVENT_BUS.register(this);
+        ModNetworking.register();
     }
 }
