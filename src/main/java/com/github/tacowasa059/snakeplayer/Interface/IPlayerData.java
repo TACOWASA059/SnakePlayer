@@ -21,4 +21,6 @@ public interface IPlayerData {
     float getSnakeSpeed();
     void setSnakeSpeed(float value);
 
+    void setSnakeExperience(int experience);
+
 }

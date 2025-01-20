@@ -5,9 +5,12 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "snakeplayer.refmap.json",
   "mixins": [
-    "PlayerMixin"
+    "PlayerMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
+    "EntityMixin",
+    "EntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

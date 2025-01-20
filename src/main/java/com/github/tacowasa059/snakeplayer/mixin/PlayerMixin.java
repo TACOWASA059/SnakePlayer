@@ -15,6 +15,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -46,6 +47,8 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     private static final EntityDataAccessor<Float> SNAKE_DAMAGE = SynchedEntityData.defineId(Player.class, EntityDataSerializers.FLOAT);
     @Unique
     private static final EntityDataAccessor<Float> SNAKE_SPEED = SynchedEntityData.defineId(Player.class, EntityDataSerializers.FLOAT);
+    @Unique
+    private static final EntityDataAccessor<Integer> SNAKE_EXPERIENCE = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
 
     // NBT キーの定義
     @Unique
@@ -58,6 +61,8 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     private static final String NBT_KEY_DAMAGE = "SnakeDamage";
     @Unique
     private static final String NBT_KEY_SPEED = "SnakeSpeed";
+    @Unique
+    private static final String NBT_KEY_EXP = "XpLevel";
     @Unique
     private int partID = 0;
 
@@ -83,7 +88,7 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     private void onConstructed(CallbackInfo ci) {
         if(!getIsSnake()) return;
         Player player = (Player)(Object)this;
-        int current_length = player.experienceLevel + 1;
+        int current_length = player.getEntityData().get(SNAKE_EXPERIENCE) + 1;
 
         partID = 0;
         for(int i = 0; i < current_length; i++){
@@ -104,6 +109,7 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         player.getEntityData().define(BODY_SEGMENT_SIZE, 1.0F);
         player.getEntityData().define(SNAKE_DAMAGE, 1.0F);
         player.getEntityData().define(SNAKE_SPEED, 0.15F);
+        player.getEntityData().define(SNAKE_EXPERIENCE, 0);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -114,7 +120,7 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         float parts_size = getBodySegmentSize();
 
         // update entity length
-        int target_length = player.experienceLevel + 1;
+        int target_length = player.getEntityData().get(SNAKE_EXPERIENCE) + 1;
         int current_length = subEntities.size();
 
         while(target_length > current_length){ //少ない場合は追加する
@@ -229,11 +235,13 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     // NBT 書き込み
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag compound, CallbackInfo ci) {
+        Player player = (Player)(Object)this;
         compound.putBoolean(NBT_KEY_IS_SNAKE, getIsSnake());
         compound.putFloat(NBT_KEY_HEAD_SIZE, getHeadSize());
         compound.putFloat(NBT_KEY_BODY_SEGMENT_SIZE, getBodySegmentSize());
         compound.putFloat(NBT_KEY_DAMAGE, getSnakeDamage());
         compound.putFloat(NBT_KEY_SPEED, getSnakeSpeed());
+        compound.putInt(NBT_KEY_EXP, player.getEntityData().get(SNAKE_EXPERIENCE));
     }
 
     // NBT 読み込み
@@ -254,6 +262,20 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         if (compound.contains(NBT_KEY_SPEED)) {
             setSnakeSpeed(compound.getFloat(NBT_KEY_SPEED));
         }
+        if (compound.contains(NBT_KEY_EXP)) {
+            Player player = (Player)(Object)this;
+            player.getEntityData().set(SNAKE_EXPERIENCE, compound.getInt(NBT_KEY_EXP));
+        }
+    }
+    @Inject(method = "giveExperienceLevels",at=@At("TAIL"))
+    public void giveExperience(int p_36276_, CallbackInfo ci){
+        Player player = (Player) (Object) this;
+        setSnakeExperience(player.experienceLevel);
+    }
+    @Inject(method = "onEnchantmentPerformed",at=@At("TAIL"))
+    public void onEnchantmentPerformed(ItemStack p_36172_, int p_36173_, CallbackInfo ci){
+        Player player = (Player) (Object) this;
+        setSnakeExperience(player.experienceLevel);
     }
 
     // Getter
@@ -325,5 +347,9 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         Player player = (Player)(Object)this;
         player.getEntityData().set(SNAKE_SPEED, value);
     }
-
+    @Override
+    public void setSnakeExperience(int experience){
+        Player player = (Player)(Object)this;
+        player.getEntityData().set(SNAKE_EXPERIENCE, experience);
+    }
 }
