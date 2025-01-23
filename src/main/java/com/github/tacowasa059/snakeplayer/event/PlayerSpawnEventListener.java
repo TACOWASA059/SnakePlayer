@@ -2,18 +2,12 @@ package com.github.tacowasa059.snakeplayer.event;
 
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
-import com.github.tacowasa059.snakeplayer.network.ModNetworking;
-import com.github.tacowasa059.snakeplayer.network.RefreshDimensionsBatchPacket;
-import com.github.tacowasa059.snakeplayer.network.RefreshDimensionsPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Mod.EventBusSubscriber(modid = SnakePlayer.MODID,bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerSpawnEventListener {
@@ -30,7 +24,7 @@ public class PlayerSpawnEventListener {
         new_playerData.setSnakeDamage(original_playerData.getSnakeDamage());
         new_playerData.setHeadSize(original_playerData.getHeadSize());
         new_playerData.setSnakeSpeed(original_playerData.getSnakeSpeed());
-        new_playerData.setIsSnake(new_playerData.getIsSnake());
+        new_playerData.setIsSnake(original_playerData.getIsSnake());
     }
     @SubscribeEvent
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
@@ -50,18 +44,6 @@ public class PlayerSpawnEventListener {
     }
     public static void ReflectBoundingBox(Player playerEntity) {
         if (playerEntity instanceof ServerPlayer newPlayer) {
-            IPlayerData newPlayerData = (IPlayerData) newPlayer;
-            List<ServerPlayer> allPlayers = newPlayer.serverLevel().players();
-
-            List<RefreshDimensionsPacket> packets = new ArrayList<>();
-            for (ServerPlayer player : allPlayers) {
-                IPlayerData playerData = (IPlayerData) player;
-                packets.add(new RefreshDimensionsPacket(player.getUUID(), playerData.getIsSnake(), playerData.getHeadSize(), playerData.getBodySegmentSize()));
-            }
-            ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> newPlayer), new RefreshDimensionsBatchPacket(packets));
-
-            ModNetworking.CHANNEL.send(PacketDistributor.ALL.noArg(),
-                    new RefreshDimensionsPacket(newPlayer.getUUID(), newPlayerData.getIsSnake(), newPlayerData.getHeadSize(), newPlayerData.getBodySegmentSize()));
 
             newPlayer.refreshDimensions();
         }

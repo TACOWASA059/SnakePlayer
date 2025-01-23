@@ -17,8 +17,6 @@ import javax.annotation.Nullable;
 public class PlayerPart extends PartEntity<Player> {
     public final Player parentMob;
     public final String name;
-
-
     public PlayerPart(Player p_31014_, String p_31015_) {
         super(p_31014_);
         this.parentMob = p_31014_;

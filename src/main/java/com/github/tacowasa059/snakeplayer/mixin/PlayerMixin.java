@@ -1,9 +1,8 @@
 package com.github.tacowasa059.snakeplayer.mixin;
 
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.entity.ModDataSerializers;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
-import com.github.tacowasa059.snakeplayer.network.ModNetworking;
-import com.github.tacowasa059.snakeplayer.network.RefreshDimensionsPacket;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +20,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -66,6 +64,13 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     @Unique
     private int partID = 0;
 
+    @Unique
+    private static final EntityDataAccessor<List<Vec3>> PART_POSITIONS = SynchedEntityData.defineId(
+            Player.class, ModDataSerializers.VEC3_LIST);
+    @Unique
+    private static final EntityDataAccessor<List<Vec3>> PREV_PART_POSITIONS = SynchedEntityData.defineId(
+            Player.class, ModDataSerializers.VEC3_LIST);
+
 
     /**
      * プレイヤーの指定した距離の前方向の座標を計算
@@ -104,12 +109,14 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     @Inject(method="defineSynchedData",at=@At("TAIL"))
     void defineSynchedData(CallbackInfo ci){
         Player player = (Player) (Object)this;
-        player.getEntityData().define(IS_Snake, true);
+        player.getEntityData().define(IS_Snake, false);
         player.getEntityData().define(HEAD_SIZE, 1.0F);
         player.getEntityData().define(BODY_SEGMENT_SIZE, 1.0F);
         player.getEntityData().define(SNAKE_DAMAGE, 1.0F);
-        player.getEntityData().define(SNAKE_SPEED, 0.15F);
+        player.getEntityData().define(SNAKE_SPEED, 0.07F);
         player.getEntityData().define(SNAKE_EXPERIENCE, 0);
+        player.getEntityData().define(PART_POSITIONS, new ArrayList<>());
+        player.getEntityData().define(PREV_PART_POSITIONS, new ArrayList<>());
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -191,6 +198,52 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
 
             for(Entity entity : entities){
                 entity.hurt(damageSource, damageAmount);
+            }
+        }
+
+        if(player.level().isClientSide() && player.tickCount % 5 == 0){//client side only(refreshDimensions)
+            float tolerance = 0.05f;
+            float width = (float) player.getBoundingBox().getXsize();
+            float height = (float) player.getBoundingBox().getYsize();
+            float current_size = getHeadSize();
+
+            if(Math.abs(current_size - width)>tolerance || Math.abs(current_size - height)>tolerance){
+                player.refreshDimensions();
+            }
+
+            float current_segment_size = getBodySegmentSize();
+            for(PlayerPart playerPart : subEntities){
+                float parts_width = (float) playerPart.getBoundingBox().getXsize();
+                float parts_height = (float) playerPart.getBoundingBox().getYsize();
+                if(Math.abs(current_segment_size - parts_width)>tolerance || Math.abs(current_segment_size - parts_height)>tolerance){
+                    playerPart.refreshDimensions();
+                }
+            }
+        }
+
+        if(!player.level().isClientSide()){
+            List<Vec3> partPositions = new ArrayList<>();
+            List<Vec3> prevPartPositions = new ArrayList<>();
+            for(PlayerPart playerPart:subEntities){
+                partPositions.add(new Vec3(playerPart.getX(), playerPart.getY(), playerPart.getZ()));
+                prevPartPositions.add(new Vec3(playerPart.xo, playerPart.yo, playerPart.zo));
+            }
+            player.getEntityData().set(PART_POSITIONS, partPositions);
+            player.getEntityData().set(PREV_PART_POSITIONS, prevPartPositions);
+        }else{
+            List<Vec3> partPositions = player.getEntityData().get(PART_POSITIONS);
+            List<Vec3> prevPartPositions = player.getEntityData().get(PREV_PART_POSITIONS);
+            for(int i=0;i<Math.min(partPositions.size(), subEntities.size());i++){
+                Vec3 pos = partPositions.get(i);
+                Vec3 prev_pos = prevPartPositions.get(i);
+
+                PlayerPart playerPart= subEntities.get(i);
+                if(playerPart!=null){
+                    playerPart.setPos(prev_pos);
+                    playerPart.setOldPosAndRot();
+                    playerPart.setPos(pos);
+                }
+
             }
         }
     }
@@ -315,16 +368,12 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         player.getEntityData().set(IS_Snake, value);
         if(!value) removeSubEntities(); //falseのときはsubEntitiesをremove
         player.refreshDimensions();
-        if(!player.level().isClientSide()) ModNetworking.CHANNEL.send(PacketDistributor.ALL.noArg(),
-                new RefreshDimensionsPacket(player.getUUID(),getIsSnake(),getHeadSize(), getBodySegmentSize()));
     }
     @Override
     public void setHeadSize(float value) {
         Player player = (Player)(Object)this;
         player.getEntityData().set(HEAD_SIZE, value);
         player.refreshDimensions();
-        if(!player.level().isClientSide()) ModNetworking.CHANNEL.send(PacketDistributor.ALL.noArg(),
-                new RefreshDimensionsPacket(player.getUUID(),getIsSnake(),getHeadSize(), getBodySegmentSize()));
     }
 
     @Override
@@ -332,8 +381,6 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         Player player = (Player)(Object)this;
         player.getEntityData().set(BODY_SEGMENT_SIZE, value);
         player.refreshDimensions();
-        if(!player.level().isClientSide()) ModNetworking.CHANNEL.send(PacketDistributor.ALL.noArg(),
-                new RefreshDimensionsPacket(player.getUUID(),getIsSnake(),getHeadSize(), getBodySegmentSize()));
     }
 
     @Override

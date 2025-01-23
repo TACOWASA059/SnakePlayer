@@ -91,6 +91,8 @@ public class ClientRenderListener {
         int i = 0;
         float segmentsize = playerData.getBodySegmentSize()/2;
         for(PlayerPart playerPart:playerParts){
+
+
             Vec3 vec3 = playerPart.getPosition(partialTicks).subtract(playerVec).add(0,segmentsize,0);
             Vec3 targetVec3 = player.getPosition(partialTicks);
             if(i>0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);

@@ -1,6 +1,6 @@
 package com.github.tacowasa059.snakeplayer;
 
-import com.github.tacowasa059.snakeplayer.network.ModNetworking;
+import com.github.tacowasa059.snakeplayer.common.entity.ModDataSerializers;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -18,6 +18,6 @@ public class SnakePlayer {
 
 
         MinecraftForge.EVENT_BUS.register(this);
-        ModNetworking.register();
+        ModDataSerializers.register();
     }
 }

@@ -14,8 +14,6 @@ public class ServerPlayerMixin {
         setExp();
     }
 
-
-
     @Inject(method="restoreFrom", at=@At("TAIL"))
     public void restoreFrom(ServerPlayer p_9016_, boolean p_9017_, CallbackInfo ci){
         setExp();
