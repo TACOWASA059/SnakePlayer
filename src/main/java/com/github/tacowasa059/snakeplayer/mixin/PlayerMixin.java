@@ -121,8 +121,22 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
-        if(!getIsSnake()) return;
         Player player = (Player)(Object)this;
+        float tolerance = 0.05f;
+
+        if(!getIsSnake()){
+            if(player.level().isClientSide()){
+                float width = (float) player.getBoundingBox().getXsize();
+                float height = (float) player.getBoundingBox().getYsize();
+                EntityDimensions entityDimensions = player.getDimensions(player.getPose());
+                if(Math.abs(entityDimensions.width - width) > tolerance ||
+                        Math.abs(entityDimensions.height - height) > tolerance){
+                    player.refreshDimensions();
+                }
+            }
+            return;
+        }
+
 
         float parts_size = getBodySegmentSize();
 
@@ -202,11 +216,12 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         }
 
         if(player.level().isClientSide() && player.tickCount % 5 == 0){//client side only(refreshDimensions)
-            float tolerance = 0.05f;
+            IPlayerData playerData = (IPlayerData) player;
+
             float width = (float) player.getBoundingBox().getXsize();
             float height = (float) player.getBoundingBox().getYsize();
-            float current_size = getHeadSize();
 
+            float current_size = getHeadSize();
             if(Math.abs(current_size - width)>tolerance || Math.abs(current_size - height)>tolerance){
                 player.refreshDimensions();
             }
@@ -215,10 +230,12 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
             for(PlayerPart playerPart : subEntities){
                 float parts_width = (float) playerPart.getBoundingBox().getXsize();
                 float parts_height = (float) playerPart.getBoundingBox().getYsize();
-                if(Math.abs(current_segment_size - parts_width)>tolerance || Math.abs(current_segment_size - parts_height)>tolerance){
+                if(Math.abs(current_segment_size - parts_width)>tolerance ||
+                        Math.abs(current_segment_size - parts_height)>tolerance){
                     playerPart.refreshDimensions();
                 }
             }
+
         }
 
         if(!player.level().isClientSide()){

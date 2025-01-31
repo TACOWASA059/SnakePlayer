@@ -8,15 +8,20 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -51,6 +56,9 @@ public class ClientRenderListener {
     }
     @SubscribeEvent
     public static void onClientRender(RenderPlayerEvent.Pre event){
+        PoseStack poseStack = event.getPoseStack();
+        Frustum frustum = Minecraft.getInstance().levelRenderer.getFrustum();
+
         Player player = event.getEntity();
         if(player.isSpectator())return;
         IPlayerData playerData = (IPlayerData) player;
@@ -60,7 +68,7 @@ public class ClientRenderListener {
 
         float partialTicks = event.getPartialTick();
         int lightmap = event.getPackedLight();
-        PoseStack poseStack = event.getPoseStack();
+
         MultiBufferSource bufferSource = event.getMultiBufferSource();
 
         Vec3 playerVec = player.getPosition(partialTicks);
@@ -74,16 +82,20 @@ public class ClientRenderListener {
 
         float radius = playerData.getHeadSize()/2;
 
-        poseStack.pushPose();
-        poseStack.translate(0, radius,0);
+        AABB aabb = getAABB(player);
 
-        float yaw = player.getYRot();    // 水平方向の回転
-        float pitch = player.getXRot();  // 上下方向の回転
+        if(frustum.isVisible(aabb)){
+            poseStack.pushPose();
+            poseStack.translate(0, radius,0);
+            float yaw = player.getYRot();    // 水平方向の回転
+            float pitch = player.getXRot();  // 上下方向の回転
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw)); // Y軸回りの回転
-        poseStack.mulPose(Axis.XP.rotationDegrees(pitch)); // Z軸回りの回転
-        SphereRenderer.drawTexturedSphere(poseStack,bufferSource, location, radius,8,0,0, lightmap,true, overlay);
-        poseStack.popPose();
+            poseStack.mulPose(Axis.YP.rotationDegrees(-yaw)); // Y軸回りの回転
+            poseStack.mulPose(Axis.XP.rotationDegrees(pitch)); // Z軸回りの回転
+            SphereRenderer.drawTexturedSphere(poseStack,bufferSource, location, radius,8,0,0, lightmap,true, overlay);
+            poseStack.popPose();
+        }
+
 
 
 //        double displace = playerVec.subtract(player.getPosition(0)).length();
@@ -92,17 +104,27 @@ public class ClientRenderListener {
         float segmentsize = playerData.getBodySegmentSize()/2;
         for(PlayerPart playerPart:playerParts){
 
+            AABB aabb2 = getAABB(playerPart);
+            if(frustum.isVisible(aabb2)){
+                Vec3 vec3 = playerPart.getPosition(partialTicks).subtract(playerVec).add(0,segmentsize,0);
+                Vec3 targetVec3 = player.getPosition(partialTicks);
+                if(i>0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);
+                targetVec3 = targetVec3.subtract(playerVec).add(0,segmentsize,0);
 
-            Vec3 vec3 = playerPart.getPosition(partialTicks).subtract(playerVec).add(0,segmentsize,0);
-            Vec3 targetVec3 = player.getPosition(partialTicks);
-            if(i>0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);
-            targetVec3 = targetVec3.subtract(playerVec).add(0,segmentsize,0);
-
-            renderOctagonalPrism((AbstractClientPlayer) player, poseStack, bufferSource, segmentsize, vec3, targetVec3, lightmap, overlay);
+                renderOctagonalPrism((AbstractClientPlayer) player, poseStack, bufferSource, segmentsize, vec3, targetVec3, lightmap, overlay);
+            }
             i++;
         }
 
         event.setCanceled(true);
+    }
+
+    private static <T extends Entity> AABB getAABB(T player) {
+        AABB aabb = player.getBoundingBoxForCulling().inflate(0.5D);
+        if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
+            aabb = new AABB(player.getX() - 2.0D, player.getY() - 2.0D, player.getZ() - 2.0D, player.getX() + 2.0D, player.getY() + 2.0D, player.getZ() + 2.0D);
+        }
+        return aabb;
     }
 
     @SubscribeEvent
@@ -167,7 +189,7 @@ public class ClientRenderListener {
     private static void renderOctagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
         ResourceLocation location = player.getSkinTextureLocation();
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucent(location)); //cullingあり
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucentCull(location)); //cullingあり
 
         // 座標系を平行移動して回転
         poseStack.pushPose();

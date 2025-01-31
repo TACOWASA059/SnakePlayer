@@ -1,8 +1,11 @@
 package com.github.tacowasa059.snakeplayer.event;
 
+import com.github.tacowasa059.snakeplayer.Config;
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.ChatFormatting;
@@ -109,5 +112,95 @@ public class ModCommands {
         }
         source.sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Updated " + dataKey + " to " + value + " for selected players"), true);
         return targets.size();
+    }
+
+    @SubscribeEvent
+    public static void registerConfigCommand(RegisterCommandsEvent event){
+        CommandDispatcher dispatcher = event.getDispatcher();
+        dispatcher.register(Commands.literal("snake")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("config")
+                        .then(Commands.literal("set")
+                                // Set spread_pos cx cz
+                                .then(Commands.literal("spread_pos")
+                                        .then(Commands.argument("cx", DoubleArgumentType.doubleArg())
+                                                .then(Commands.argument("cz", DoubleArgumentType.doubleArg())
+                                                        .executes(context -> {
+                                                            double cx = DoubleArgumentType.getDouble(context, "cx");
+                                                            double cz = DoubleArgumentType.getDouble(context, "cz");
+
+                                                            Config.CX.set(cx);
+                                                            Config.CZ.set(cz);
+                                                            context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Set spread position: " + cx + ", " + cz), true);
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                                // Set spread true/false
+                                .then(Commands.literal("spread")
+                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                                .executes(context -> {
+                                                    boolean enabled = BoolArgumentType.getBool(context, "enabled");
+                                                    Config.enableSpread.set(enabled);
+
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread set to: " + enabled), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                // Set spread_Range L
+                                .then(Commands.literal("spread_Range")
+                                        .then(Commands.argument("L", DoubleArgumentType.doubleArg(0.1, 10000.0))
+                                                .executes(context -> {
+                                                    double L = DoubleArgumentType.getDouble(context, "L");
+                                                    Config.L.set(L);
+
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread range set to: " + L), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                // Set spread_minimum_r r
+                                .then(Commands.literal("spread_minimum_distance")
+                                        .then(Commands.argument("r", DoubleArgumentType.doubleArg(0.1, 100.0))
+                                                .executes(context -> {
+                                                    double r = DoubleArgumentType.getDouble(context, "r");
+                                                    Config.R.set(r);
+
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Minimum spread radius set to: " + r), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                        )
+                        // Get current config values
+                        .then(Commands.literal("get")
+                                .then(Commands.argument("key", StringArgumentType.string())
+                                        .suggests((context, builder) -> {
+                                            return net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                                    new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance"}, builder
+                                            );
+                                        })
+                                        .executes(context -> {
+                                            String key = StringArgumentType.getString(context, "key");
+                                            String value;
+                                            switch (key) {
+                                                case "spread_pos" -> value = "CX: " + Config.CX.get() + ", CZ: " + Config.CZ.get();
+                                                case "spread" -> value = "Spread Enabled: " + Config.enableSpread.get();
+                                                case "spread_Range" -> value = "Spread Range: " + Config.L.get();
+                                                case "spread_minimum_distance" -> value = "Minimum Spread Radius: " + Config.R.get();
+                                                default -> {
+                                                    context.getSource().sendFailure(Component.literal(ChatFormatting.RED + "Invalid config key."));
+                                                    return 0;
+                                                }
+                                            }
+                                            context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + value), false);
+                                            return 1;
+                                        })
+                                )
+                        )
+                )
+        );
     }
 }

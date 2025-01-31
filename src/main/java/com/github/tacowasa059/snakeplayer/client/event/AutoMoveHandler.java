@@ -25,7 +25,7 @@ public class AutoMoveHandler {
 
         LocalPlayer player = Minecraft.getInstance().player;
         IPlayerData playerData = (IPlayerData)player;
-        if(!playerData.getIsSnake() || player.isSpectator()) return;
+        if(!playerData.getIsSnake() || player.isSpectator() || player.isCreative()) return;
 
         // 現在の速度を取得
         Vec3 currentVelocity = player.getDeltaMovement();
