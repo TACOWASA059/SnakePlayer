@@ -1,8 +1,10 @@
 package com.github.tacowasa059.snakeplayer.mixin;
 
+import com.github.tacowasa059.snakeplayer.Config;
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.common.entity.ModDataSerializers;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -16,11 +18,13 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.entity.PartEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,6 +36,8 @@ import java.util.List;
 
 @Mixin(Player.class)
 public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
+
+    @Shadow protected abstract void playStepSound(BlockPos p_282121_, BlockState p_282194_);
 
     @Unique
     private final List<PlayerPart> subEntities = new ArrayList<>();
@@ -113,7 +119,7 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         player.getEntityData().define(HEAD_SIZE, 1.0F);
         player.getEntityData().define(BODY_SEGMENT_SIZE, 1.0F);
         player.getEntityData().define(SNAKE_DAMAGE, 1.0F);
-        player.getEntityData().define(SNAKE_SPEED, 0.07F);
+        player.getEntityData().define(SNAKE_SPEED, 0.2F);
         player.getEntityData().define(SNAKE_EXPERIENCE, 0);
         player.getEntityData().define(PART_POSITIONS, new ArrayList<>());
         player.getEntityData().define(PREV_PART_POSITIONS, new ArrayList<>());
@@ -172,12 +178,12 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
             double y = playerPart.getY();
             double z = playerPart.getZ();
 
-            int experienceAmount = 5;
-
-            ExperienceOrb experienceOrb = new ExperienceOrb(playerPart.level(), x, y, z, experienceAmount);
-            experienceOrb.setDeltaMovement(0.0, 0.1, 0.0);
-            playerPart.level().addFreshEntity(experienceOrb);
-
+            int experienceAmount = Config.expValue.get();
+            if(experienceAmount>0){
+                ExperienceOrb experienceOrb = new ExperienceOrb(playerPart.level(), x, y, z, experienceAmount);
+                experienceOrb.setDeltaMovement(0.0, 0.1, 0.0);
+                playerPart.level().addFreshEntity(experienceOrb);
+            }
 
             playerPart.remove(Entity.RemovalReason.DISCARDED);
             subEntities.remove(subEntities.size()-1);
@@ -200,20 +206,30 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         }
         float damageAmount = getSnakeDamage(); // ダメージ量
         // update position of each partEntity
-        for(PlayerPart playerPart:subEntities){
-            Level level = playerPart.level();
-            AABB boundingBox = playerPart.getBoundingBox();
-            List<Entity> entities = level.getEntities(playerPart, boundingBox, entity -> (entity instanceof LivingEntity && entity.getId()!=player.getId()));
+        if((!player.isDeadOrDying())&&(!player.isSpectator())){ // 死んでいないときのみ
+            for(PlayerPart playerPart:subEntities){
+                Level level = playerPart.level();
+                AABB boundingBox = playerPart.getBoundingBox();
+                List<Entity> entities = level.getEntities(playerPart, boundingBox, entity -> (entity instanceof LivingEntity && entity.getId()!=player.getId()));
 
-            Holder<DamageType> damageTypeHolder = level.registryAccess()
-                    .registryOrThrow(Registries.DAMAGE_TYPE)
-                    .getHolderOrThrow(DamageTypes.MOB_ATTACK);
-            DamageSource damageSource = new DamageSource(damageTypeHolder, (Player)(Object)this);
+                Holder<DamageType> damageTypeHolder = level.registryAccess()
+                        .registryOrThrow(Registries.DAMAGE_TYPE)
+                        .getHolderOrThrow(DamageTypes.MOB_ATTACK);
+                DamageSource damageSource = new DamageSource(damageTypeHolder, (Player)(Object)this);
 
-            for(Entity entity : entities){
-                entity.hurt(damageSource, damageAmount);
+                for(Entity entity : entities){
+                    if(entity instanceof Player player1){
+                        if((!player1.isCreative())&&(!player1.isSpectator())){
+                            entity.hurt(damageSource, damageAmount);
+                        }
+                    }
+                    else{
+                        entity.hurt(damageSource, damageAmount);
+                    }
+                }
             }
         }
+
 
         if(player.level().isClientSide() && player.tickCount % 5 == 0){//client side only(refreshDimensions)
             IPlayerData playerData = (IPlayerData) player;

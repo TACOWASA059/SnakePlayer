@@ -11,6 +11,8 @@ public class Config {
     public static final ForgeConfigSpec.DoubleValue L;
     public static final ForgeConfigSpec.DoubleValue R;
 
+    public static final ForgeConfigSpec.IntValue expValue;
+
     public static final ForgeConfigSpec.BooleanValue enableSpread;
 
     static {
@@ -29,6 +31,9 @@ public class Config {
 
         R = BUILDER.comment("Minimum radius r")
                 .defineInRange("r", 5.0, 0.1, 100.0);
+
+        expValue = BUILDER.comment("Amount of experience each segment drops")
+                .defineInRange("expValue", 10, 0, 10000);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

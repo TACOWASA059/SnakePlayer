@@ -9,8 +9,11 @@
     "ServerPlayerMixin"
   ],
   "client": [
+    "CameraMixin",
     "EntityMixin",
-    "EntityRendererMixin"
+    "EntityRendererMixin",
+    "GameRendererMixin",
+    "LocalPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

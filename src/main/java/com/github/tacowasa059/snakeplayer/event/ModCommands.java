@@ -4,10 +4,7 @@ import com.github.tacowasa059.snakeplayer.Config;
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -173,13 +170,25 @@ public class ModCommands {
                                                 })
                                         )
                                 )
+                                .then(Commands.literal("segment_experience")
+                                        .then(Commands.argument("exp", IntegerArgumentType.integer(0, Integer.MAX_VALUE))
+                                                .executes(context -> {
+
+                                                    int experience = IntegerArgumentType.getInteger(context, "exp");
+                                                    Config.expValue.set(experience);
+
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Segment Experience set to: " + experience), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
                         )
                         // Get current config values
                         .then(Commands.literal("get")
                                 .then(Commands.argument("key", StringArgumentType.string())
                                         .suggests((context, builder) -> {
                                             return net.minecraft.commands.SharedSuggestionProvider.suggest(
-                                                    new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance"}, builder
+                                                    new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance", "segment_experience"}, builder
                                             );
                                         })
                                         .executes(context -> {
@@ -190,6 +199,7 @@ public class ModCommands {
                                                 case "spread" -> value = "Spread Enabled: " + Config.enableSpread.get();
                                                 case "spread_Range" -> value = "Spread Range: " + Config.L.get();
                                                 case "spread_minimum_distance" -> value = "Minimum Spread Radius: " + Config.R.get();
+                                                case "segment_experience" -> value = "Experience Level "+Config.expValue.get();
                                                 default -> {
                                                     context.getSource().sendFailure(Component.literal(ChatFormatting.RED + "Invalid config key."));
                                                     return 0;

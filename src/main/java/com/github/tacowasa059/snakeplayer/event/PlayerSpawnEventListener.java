@@ -3,18 +3,24 @@ package com.github.tacowasa059.snakeplayer.event;
 import com.github.tacowasa059.snakeplayer.Config;
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
+import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import com.github.tacowasa059.snakeplayer.utils.GridManager;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.List;
 
 
 @Mod.EventBusSubscriber(modid = SnakePlayer.MODID,bus= Mod.EventBusSubscriber.Bus.FORGE)
@@ -79,6 +85,31 @@ public class PlayerSpawnEventListener {
         if(server.getTickCount() % 10 == 0){
             GridManager.server = server;
             gridManager.updateGrid();
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+
+        // ワールドがサーバー側か確認
+        int exp = Config.expValue.get();
+        if (player.level() instanceof ServerLevel serverLevel) {
+            if(exp > 0) spawnExperienceOrb(serverLevel,  player, exp);
+        }
+    }
+
+    // 経験値オーブを召喚するメソッド
+    private static void spawnExperienceOrb(ServerLevel world, Player player,int experienceAmount) {
+        IPlayerData playerData = (IPlayerData) player;
+        List<PlayerPart> playerPartList = playerData.getPlayerParts();
+        for(PlayerPart playerPart : playerPartList){
+            Vec3 pos = playerPart.position();
+            ExperienceOrb experienceOrb = new ExperienceOrb(world, pos.x, pos.y+0.5f, pos.z, experienceAmount);
+            experienceOrb.setDeltaMovement(0.0, 0.1, 0.0);
+            world.addFreshEntity(experienceOrb);
         }
     }
 }
