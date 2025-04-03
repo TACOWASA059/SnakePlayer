@@ -10,7 +10,9 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
@@ -27,10 +29,10 @@ public class PlayerPart extends PartEntity<Player> {
     protected void defineSynchedData() {
     }
 
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(@NotNull CompoundTag compoundTag) {
     }
 
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(@NotNull CompoundTag compoundTag) {
     }
 
     public boolean isPickable() {
@@ -42,11 +44,11 @@ public class PlayerPart extends PartEntity<Player> {
         return this.parentMob.getPickResult();
     }
 
-    public boolean hurt(DamageSource damageSource, float p_31021_) {
+    public boolean hurt(@NotNull DamageSource damageSource, float p_31021_) {
         return !this.isInvulnerableTo(damageSource) && this.parentMob.hurt(damageSource, p_31021_);
     }
 
-    public boolean is(Entity entity) {
+    public boolean is(@NotNull Entity entity) {
         return this == entity || this.parentMob == entity;
     }
 
@@ -54,9 +56,9 @@ public class PlayerPart extends PartEntity<Player> {
         throw new UnsupportedOperationException();
     }
 
-    public EntityDimensions getDimensions(Pose pose) {
+    public @NotNull EntityDimensions getDimensions(@NotNull Pose pose) {
         IPlayerData playerData =(IPlayerData) parentMob;
-        float size = playerData.getBodySegmentSize();
+        float size = playerData.snakePlayer$getBodySegmentSize();
         return EntityDimensions.scalable(size, size);
     }
 
@@ -64,5 +66,16 @@ public class PlayerPart extends PartEntity<Player> {
         return false;
     }
 
+    public void setOldPos(Vec3 vec3){
+        double d0 = vec3.x;
+        double d1 = vec3.y;
+        double d2 = vec3.z;
+        this.xo = d0;
+        this.yo = d1;
+        this.zo = d2;
+        this.xOld = d0;
+        this.yOld = d1;
+        this.zOld = d2;
+    }
 
 }

@@ -17,7 +17,7 @@ public class EntityRendererMixin<T extends Entity> {
     public void render(T p_114491_, Frustum p_114492_, double p_114493_, double p_114494_, double p_114495_, CallbackInfoReturnable<Boolean> cir){
         if(p_114491_ instanceof AbstractClientPlayer player){
             IPlayerData playerData = (IPlayerData) player;
-            if(playerData.getIsSnake()){
+            if(playerData.snakePlayer$getIsSnake()){
                 cir.setReturnValue(true);
                 cir.cancel();
             }

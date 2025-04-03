@@ -36,7 +36,7 @@ import java.util.List;
 public class ClientRenderListener {
     /**
      * 手の描画をキャンセル
-     * @param event
+     * @param event RenderHandEvent
      */
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event){
@@ -47,7 +47,7 @@ public class ClientRenderListener {
             return;
         }
         IPlayerData playerData = (IPlayerData) player;
-        if(!playerData.getIsSnake()){
+        if(!playerData.snakePlayer$getIsSnake()){
             return;
         }
         event.setCanceled(true); //snakeのときはキャンセル
@@ -60,9 +60,9 @@ public class ClientRenderListener {
         Player player = event.getEntity();
         if(player.isSpectator())return;
         IPlayerData playerData = (IPlayerData) player;
-        if(!playerData.getIsSnake())return;
+        if(!playerData.snakePlayer$getIsSnake())return;
 
-        List<PlayerPart> playerParts = playerData.getPlayerParts();
+        List<PlayerPart> playerParts = playerData.snakePlayer$getPlayerParts();
 
         float partialTicks = event.getPartialTick();
         int lightmap = event.getPackedLight();
@@ -78,7 +78,7 @@ public class ClientRenderListener {
 
         ResourceLocation location = ((AbstractClientPlayer)player).getSkinTextureLocation();
 
-        float radius = playerData.getHeadSize()/2;
+        float radius = playerData.snakePlayer$getHeadSize()/2;
 
         AABB aabb = getAABB(player);
 
@@ -95,11 +95,8 @@ public class ClientRenderListener {
         }
 
 
-
-//        double displace = playerVec.subtract(player.getPosition(0)).length();
-
         int i = 0;
-        float segmentsize = playerData.getBodySegmentSize()/2;
+        float segmentsize = playerData.snakePlayer$getBodySegmentSize()/2;
         for(PlayerPart playerPart:playerParts){
 
             AABB aabb2 = getAABB(playerPart);
@@ -135,7 +132,7 @@ public class ClientRenderListener {
             return;
         }
         IPlayerData playerData = (IPlayerData) player;
-        if(!playerData.getIsSnake())return;
+        if(!playerData.snakePlayer$getIsSnake())return;
 
 
         PoseStack poseStack = event.getPoseStack();
@@ -144,8 +141,8 @@ public class ClientRenderListener {
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
 
 
-        List<PlayerPart> playerParts = playerData.getPlayerParts();
-        float radius = playerData.getHeadSize()/2;
+        List<PlayerPart> playerParts = playerData.snakePlayer$getPlayerParts();
+        float radius = playerData.snakePlayer$getHeadSize()/2;
 
         float partialTicks = event.getPartialTick();
 
@@ -157,13 +154,13 @@ public class ClientRenderListener {
         RenderSystem.getModelViewStack().popPose();  // 行列を元に戻す
         RenderSystem.applyModelViewMatrix();  // 元の状態を再適用
 
-        float segmentsize = playerData.getBodySegmentSize()/2;
+        float segmentsize = playerData.snakePlayer$getBodySegmentSize()/2;
         int i = 0;
         for(PlayerPart playerPart:playerParts){
             Vec3 vec3 = playerPart.getPosition(0).subtract(cameraPos).add(0,radius,0);
             Vec3 targetVec3 = player.getPosition(partialTicks);
             if(i > 0) targetVec3 = playerParts.get(i-1).getPosition(partialTicks);
-            targetVec3 = targetVec3.subtract(cameraPos).add(0,radius,0);
+            targetVec3 = targetVec3.subtract(cameraPos).add(0, radius,0);
 
             renderOctagonalPrism(player, poseStack, bufferSource, segmentsize, vec3, targetVec3, lightmap, overlay);
             i++;
@@ -176,13 +173,6 @@ public class ClientRenderListener {
 
     /**
      * render cylinder 2 layer
-     * @param player
-     * @param poseStack
-     * @param bufferSource
-     * @param base
-     * @param target
-     * @param lightmap
-     * @param overlay
      */
     private static void renderOctagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
         ResourceLocation location = player.getSkinTextureLocation();
@@ -205,13 +195,6 @@ public class ClientRenderListener {
 
     /**
      * render cylinder 1 layer
-     * @param poseStack
-     * @param lightmap
-     * @param vertexConsumer
-     * @param radius radius of the cylider
-     * @param isOuter outer layer or inner layer
-     * @param mul ratio of outer layer and inner layer
-     * @param overlay
      */
     private static void renderCylinder(PoseStack poseStack, int lightmap, VertexConsumer vertexConsumer, float radius, boolean isOuter, float mul, int overlay) {
         float side_length = radius * 2;

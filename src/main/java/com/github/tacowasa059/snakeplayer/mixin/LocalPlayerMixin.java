@@ -16,14 +16,13 @@ public abstract class LocalPlayerMixin {
 
     /**
      * 前進と後退を無効化
-     * @param ci
      */
     @Inject(method = "serverAiStep", at = @At("TAIL"))
     private void disableBackwardMovement(CallbackInfo ci) {
         LocalPlayer player = (LocalPlayer) (Object)this;
         if (this.isControlledCamera()) {
             IPlayerData playerData = (IPlayerData)player;
-            if(!playerData.getIsSnake() || player.isSpectator() || player.isCreative()) return;
+            if(!playerData.snakePlayer$getIsSnake() || player.isSpectator() || player.isCreative()) return;
 
             player.zza = 0;
         }
@@ -31,14 +30,13 @@ public abstract class LocalPlayerMixin {
 
     /**
      * 蛇の状態では走れない
-     * @param cir
      */
     @Inject(method = "canStartSprinting", at = @At("RETURN"), cancellable = true)
     private void modifyCanStartSprinting(CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValue()) {
             LocalPlayer player = (LocalPlayer) (Object) this;
             IPlayerData playerData = (IPlayerData) player;
-            if(!playerData.getIsSnake() || player.isSpectator() || player.isCreative()) return;
+            if(!playerData.snakePlayer$getIsSnake() || player.isSpectator() || player.isCreative()) return;
             cir.setReturnValue(false);
         }
     }

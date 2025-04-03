@@ -3,6 +3,7 @@ package com.github.tacowasa059.snakeplayer.mixin;
 import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -11,18 +12,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerPlayerMixin {
     @Inject(method="setExperienceLevels",at=@At("TAIL"))
     public void setExperienceLevels(int p_9175_, CallbackInfo ci){
-        setExp();
+        snakePlayer$setExp();
     }
 
     @Inject(method="restoreFrom", at=@At("TAIL"))
     public void restoreFrom(ServerPlayer p_9016_, boolean p_9017_, CallbackInfo ci){
-        setExp();
+        snakePlayer$setExp();
     }
 
-    private void setExp() {
+    @Unique
+    private void snakePlayer$setExp() {
         ServerPlayer player = (ServerPlayer) (Object)this;
         IPlayerData playerData = (IPlayerData) player;
-        playerData.setSnakeExperience(player.experienceLevel);
+        playerData.snakePlayer$setSnakeExperience(player.experienceLevel);
     }
 
 }

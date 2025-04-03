@@ -34,12 +34,12 @@ public class SphereRenderer {
         // u0,v0 : 基準となるテクスチャ座標(底面のテクスチャ上の中心座標)
         // segments: 4の倍数の想定で、>=4
         float cube_size=0.0625F;//texture
-        for (int j = 0; j< Math.round(segments/4);j++) {
-            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4)));
+        for (int j = 0; j< Math.round(segments/4f);j++) {
+            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4f)));
             float sin_theta= (float) Math.sin(theta);
             float cos_theta= (float) Math.cos(theta);
 
-            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4)));
+            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4f)));
             float next_sin_theta= (float) Math.sin(next_theta);
             float next_cos_theta= (float) Math.cos(next_theta);
 
@@ -119,12 +119,12 @@ public class SphereRenderer {
     }
 
     private static void addSideSphere(float radius, int segments, float x,float y, float z, VertexConsumer vertexConsumer, Matrix4f positionMatrix,Matrix3f normalMatrix,boolean isInner,int packedLight,boolean lightmap2, int overlay) {
-        for (int j = Math.round(segments/4); j< Math.round(3*segments/4);j++) {
-            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4)));
+        for (int j = Math.round(segments/4f); j< Math.round(3*segments/4f);j++) {
+            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4f)));
             float sin_theta= (float) Math.sin(theta);
             float cos_theta= (float) Math.cos(theta);
 
-            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4)));
+            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4f)));
             float next_sin_theta= (float) Math.sin(next_theta);
             float next_cos_theta= (float) Math.cos(next_theta);
 
@@ -149,11 +149,11 @@ public class SphereRenderer {
                 };
 
                 float u = 0.5F * i / segments;
-                float v = 0.125F + 0.125F*(j-Math.round(segments/4))/Math.round(segments/2);
+                float v = 0.125F + 0.125F*(j-Math.round(segments/4f))/Math.round(segments/2f);
                 float next_i_u = 0.5F * (i+1) / segments;
                 float next_i_v = v;
                 float next_j_u = 0.5F * i / segments;
-                float next_j_v = 0.125F + 0.125F*(j+1-Math.round(segments/4))/Math.round(segments/2);
+                float next_j_v = 0.125F + 0.125F*(j+1-Math.round(segments/4f))/Math.round(segments/2f);
                 float next_ij_u = 0.5F * (i+1) / segments;
                 float next_ij_v = next_j_v;
 

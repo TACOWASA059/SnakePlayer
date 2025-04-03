@@ -25,35 +25,28 @@ public class AutoMoveHandler {
 
         LocalPlayer player = Minecraft.getInstance().player;
         IPlayerData playerData = (IPlayerData)player;
-        if(!playerData.getIsSnake() || player.isSpectator() || player.isCreative()) return;
+        if(!playerData.snakePlayer$getIsSnake() || player.isSpectator() || player.isCreative()) return;
+        if(!player.onGround())return;
 
         // 現在の速度を取得
         Vec3 currentVelocity = player.getDeltaMovement();
 
         // 視線方向を取得
         Vec3 forward;
-        List<PlayerPart> list = playerData.getPlayerParts();
+        List<PlayerPart> list = playerData.snakePlayer$getPlayerParts();
 
-        forward= player.getLookAngle();
 
-        forward = forward.subtract(0, forward.y,0);
-
-//        if (forward.lengthSqr() < 1.0E-6) {
-
-            if(list.size()==0) forward = new Vec3(0, 0, 1);
-            else{
-                Vec3 vec3 = (player.position().subtract(list.get(0).position()));
-                vec3 = vec3.subtract(0, vec3.y, 0);
-                forward = vec3.normalize();
-                if(forward.lengthSqr() < 1.0E-6){
-                    forward = new Vec3(0, 0, 1);
-                }
+        if(list.size()==0) forward = new Vec3(0, 0, 1);
+        else{
+            Vec3 vec3 = (player.position().subtract(list.get(0).position()));
+            vec3 = vec3.subtract(0, vec3.y, 0);
+            forward = vec3.normalize();
+            if(forward.lengthSqr() < 1.0E-6){
+                forward = new Vec3(0, 0, 1);
             }
-//        } else {
-//            forward = forward.normalize();
-//        }
+        }
 
-        double additionalSpeed = playerData.getSnakeSpeed();
+        double additionalSpeed = playerData.snakePlayer$getSnakeSpeed();
 
         Vec3 newVelocity = currentVelocity.add(
                 forward.x * additionalSpeed,

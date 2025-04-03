@@ -43,7 +43,7 @@ public class GridManager {
             IPlayerData playerData = (IPlayerData) player;
 
             updateGrid(player);
-            for(PlayerPart playerPart : playerData.getPlayerParts()){
+            for(PlayerPart playerPart : playerData.snakePlayer$getPlayerParts()){
                 updateGrid(playerPart);
             }
         }

@@ -6,7 +6,6 @@ import com.github.tacowasa059.snakeplayer.SnakePlayer;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import com.github.tacowasa059.snakeplayer.utils.GridManager;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +25,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = SnakePlayer.MODID,bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerSpawnEventListener {
 
-    private static GridManager gridManager = new GridManager();
+    private static final GridManager gridManager = new GridManager();
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) { //respawn + change dimension
@@ -36,11 +35,11 @@ public class PlayerSpawnEventListener {
         IPlayerData original_playerData = (IPlayerData)originalPlayer;
         IPlayerData new_playerData = (IPlayerData)newPlayer;
 
-        new_playerData.setBodySegmentSize(original_playerData.getBodySegmentSize());
-        new_playerData.setSnakeDamage(original_playerData.getSnakeDamage());
-        new_playerData.setHeadSize(original_playerData.getHeadSize());
-        new_playerData.setSnakeSpeed(original_playerData.getSnakeSpeed());
-        new_playerData.setIsSnake(original_playerData.getIsSnake());
+        new_playerData.snakePlayer$setBodySegmentSize(original_playerData.snakePlayer$getBodySegmentSize());
+        new_playerData.snakePlayer$setSnakeDamage(original_playerData.snakePlayer$getSnakeDamage());
+        new_playerData.snakePlayer$setHeadSize(original_playerData.snakePlayer$getHeadSize());
+        new_playerData.snakePlayer$setSnakeSpeed(original_playerData.snakePlayer$getSnakeSpeed());
+        new_playerData.snakePlayer$setIsSnake(original_playerData.snakePlayer$getIsSnake());
     }
     @SubscribeEvent
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
@@ -104,7 +103,7 @@ public class PlayerSpawnEventListener {
     // 経験値オーブを召喚するメソッド
     private static void spawnExperienceOrb(ServerLevel world, Player player,int experienceAmount) {
         IPlayerData playerData = (IPlayerData) player;
-        List<PlayerPart> playerPartList = playerData.getPlayerParts();
+        List<PlayerPart> playerPartList = playerData.snakePlayer$getPlayerParts();
         for(PlayerPart playerPart : playerPartList){
             Vec3 pos = playerPart.position();
             ExperienceOrb experienceOrb = new ExperienceOrb(world, pos.x, pos.y+0.5f, pos.z, experienceAmount);

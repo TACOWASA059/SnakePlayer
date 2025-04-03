@@ -22,7 +22,7 @@ public class EntityMixin {
         Entity entity = (Entity)(Object)this;
         if(entity instanceof Player player){
             IPlayerData playerData = (IPlayerData)player;
-            if(playerData.getIsSnake()){
+            if(playerData.snakePlayer$getIsSnake()){
                 cir.setReturnValue(true);
                 cir.cancel();
             }
@@ -35,7 +35,7 @@ public class EntityMixin {
         Player player = Minecraft.getInstance().player;
         if(player==null)return;
         IPlayerData playerData = (IPlayerData)player;
-        if(!playerData.getIsSnake() || player.isSpectator() || player.isCreative()) return;
+        if(!playerData.snakePlayer$getIsSnake() || player.isSpectator() || player.isCreative()) return;
 
         Entity entity = (Entity) (Object)this;
 

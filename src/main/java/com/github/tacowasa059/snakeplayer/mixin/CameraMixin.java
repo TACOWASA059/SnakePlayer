@@ -57,7 +57,7 @@ public abstract class CameraMixin {
         Player player = Minecraft.getInstance().player;
         if(player==null)return;
         IPlayerData playerData = (IPlayerData)player;
-        if(!playerData.getIsSnake() || player.isSpectator()) return;
+        if(!playerData.snakePlayer$getIsSnake() || player.isSpectator()) return;
         this.initialized = true;
         this.level = p_90576_;
         this.entity = p_90577_;
@@ -72,7 +72,7 @@ public abstract class CameraMixin {
                 this.setRotation(this.yRot + 180.0F, -this.xRot);
             }
 
-            this.move(-this.getMaxZoom(8.0D * playerData.getHeadSize()), 0.0D, 0.0D);
+            this.move(-this.getMaxZoom(8.0D * playerData.snakePlayer$getHeadSize()), 0.0D, 0.0D);
         } else if (p_90577_ instanceof LivingEntity && ((LivingEntity)p_90577_).isSleeping()) {
             Direction direction = ((LivingEntity)p_90577_).getBedOrientation();
             this.setRotation(direction != null ? direction.toYRot() - 180.0F : 0.0F, 0.0F);

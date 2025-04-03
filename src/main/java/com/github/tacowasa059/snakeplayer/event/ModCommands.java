@@ -30,7 +30,7 @@ public class ModCommands {
                                                         .executes(context -> {
                                                             Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
                                                             boolean value = BoolArgumentType.getBool(context, "value");
-                                                            return handlePlayerBooleanCommand(context.getSource(), targets, "isSnake", value);
+                                                            return handlePlayerBooleanCommand(context.getSource(), targets, value);
                                                         })
                                                 )
                                         )
@@ -55,14 +55,13 @@ public class ModCommands {
         );
     }
 
-    private static int handlePlayerBooleanCommand(CommandSourceStack source, Collection<ServerPlayer> targets, String dataKey, boolean value) {
+    private static int handlePlayerBooleanCommand(CommandSourceStack source, Collection<ServerPlayer> targets, boolean value) {
         for (ServerPlayer player : targets) {
             IPlayerData playerData = (IPlayerData) player;
-            if ("isSnake".equals(dataKey)) {
-                playerData.setIsSnake(value);
-            }
+            playerData.snakePlayer$setIsSnake(value);
+
         }
-        source.sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Updated " + dataKey + " to " + value + " for selected players"), true);
+        source.sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Updated " + "isSnake" + " to " + value + " for selected players"), true);
         return targets.size();
     }
 
@@ -70,41 +69,42 @@ public class ModCommands {
         for (ServerPlayer player : targets) {
             IPlayerData playerData = (IPlayerData) player;
             switch (dataKey) {
-                case "headSize":
+                case "headSize" -> {
                     if (value >= 0.1 && value <= 10.0) {
-                        playerData.setHeadSize(value);
+                        playerData.snakePlayer$setHeadSize(value);
                     } else {
                         source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for headSize: " + value + ChatFormatting.RED + " (Range: 0.1 - 10.0)"));
                         return 0;
                     }
-                    break;
-                case "bodySegmentSize":
+                }
+                case "bodySegmentSize" -> {
                     if (value >= 0.1 && value <= 10.0) {
-                        playerData.setBodySegmentSize(value);
+                        playerData.snakePlayer$setBodySegmentSize(value);
                     } else {
                         source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for bodySegmentSize: " + value + ChatFormatting.RED + " (Range: 0.1 - 10.0)"));
                         return 0;
                     }
-                    break;
-                case "damage":
+                }
+                case "damage" -> {
                     if (value >= 0) {
-                        playerData.setSnakeDamage(value);
+                        playerData.snakePlayer$setSnakeDamage(value);
                     } else {
                         source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for damage: " + value + ChatFormatting.RED + " (Range: >= 0)"));
                         return 0;
                     }
-                    break;
-                case "speed":
+                }
+                case "speed" -> {
                     if (value >= 0.0 && value <= 0.75) {
-                        playerData.setSnakeSpeed(value);
+                        playerData.snakePlayer$setSnakeSpeed(value);
                     } else {
                         source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for speed: " + value + ChatFormatting.RED + " (Range: 0.0 - 0.75)"));
                         return 0;
                     }
-                    break;
-                default:
+                }
+                default -> {
                     source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid data key: " + dataKey));
                     return 0;
+                }
             }
         }
         source.sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Updated " + dataKey + " to " + value + " for selected players"), true);
@@ -113,7 +113,7 @@ public class ModCommands {
 
     @SubscribeEvent
     public static void registerConfigCommand(RegisterCommandsEvent event){
-        CommandDispatcher dispatcher = event.getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         dispatcher.register(Commands.literal("snake")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("config")
@@ -186,11 +186,9 @@ public class ModCommands {
                         // Get current config values
                         .then(Commands.literal("get")
                                 .then(Commands.argument("key", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            return net.minecraft.commands.SharedSuggestionProvider.suggest(
-                                                    new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance", "segment_experience"}, builder
-                                            );
-                                        })
+                                        .suggests((context, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                                new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance", "segment_experience"}, builder
+                                        ))
                                         .executes(context -> {
                                             String key = StringArgumentType.getString(context, "key");
                                             String value;
