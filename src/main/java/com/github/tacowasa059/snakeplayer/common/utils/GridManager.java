@@ -57,7 +57,7 @@ public class GridManager {
     public <T extends Entity> void updateGrid(T entity){
         Vec3 pos = entity.position();
         if(entity instanceof Player){
-            markLineOfSightInGrid(entity, 8, 2);
+            markLineOfSightInGrid(entity, Config.SPAWN_BLOCK_VIEW_DISTANCE.get(), Config.SPAWN_BLOCK_VIEW_HALF_WIDTH.get());
         }
         int index = getGridIndexFromPos(pos.x, pos.z);
 

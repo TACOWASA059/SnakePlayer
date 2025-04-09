@@ -15,8 +15,23 @@ public class Config {
 
     public static final ForgeConfigSpec.BooleanValue enableSpread;
 
+    public static final ForgeConfigSpec.BooleanValue DEFAULT_IS_SNAKE;
+
+    public static final ForgeConfigSpec.DoubleValue DEFAULT_HEAD_SIZE;
+    public static final ForgeConfigSpec.DoubleValue DEFAULT_BODY_SEGMENT_SIZE;
+    public static final ForgeConfigSpec.DoubleValue DEFAULT_DAMAGE;
+    public static final ForgeConfigSpec.DoubleValue DEFAULT_SPEED;
+
+    public static final ForgeConfigSpec.IntValue SPAWN_BLOCK_VIEW_DISTANCE;
+    public static final ForgeConfigSpec.IntValue SPAWN_BLOCK_VIEW_HALF_WIDTH;
+
     static {
-        BUILDER.push("General Settings for Spread Respawn");
+        BUILDER.push("Experience Settings");
+        expValue = BUILDER.comment("Amount of experience each segment drops")
+                .defineInRange("expValue", 10, 0, 10000);
+        BUILDER.pop();
+
+        BUILDER.push("Spread Respawn Settings");
 
         enableSpread = BUILDER.comment("enable spread respawn").define("enable_spread", false);
 
@@ -32,10 +47,40 @@ public class Config {
         R = BUILDER.comment("Minimum radius r")
                 .defineInRange("r", 5.0, 0.1, 100.0);
 
-        expValue = BUILDER.comment("Amount of experience each segment drops")
-                .defineInRange("expValue", 10, 0, 10000);
+        BUILDER.push("Spawn Blocker: Line of Sight");
+
+        SPAWN_BLOCK_VIEW_DISTANCE = BUILDER
+                .comment("Maximum distance (blocks) in front of the player to block spawning along the view direction")
+                .defineInRange("spawn_block_view_distance", 8, 0, 128);
+
+        SPAWN_BLOCK_VIEW_HALF_WIDTH = BUILDER
+                .comment("Half-width (blocks) of the area to block spawning around the view line")
+                .defineInRange("spawn_block_view_half_width", 2, 0, 64);
 
         BUILDER.pop();
+
+        BUILDER.pop();
+
+        BUILDER.push("Snake Player Default Settings");
+
+        DEFAULT_IS_SNAKE = BUILDER.comment("Default is_snake or not")
+                .define("default_is_snake", false);
+
+        DEFAULT_HEAD_SIZE = BUILDER.comment("Default head size for snake players")
+                .defineInRange("default_head_size", 1.0, 0.001, 100);
+
+        DEFAULT_BODY_SEGMENT_SIZE = BUILDER.comment("Default body segment size")
+                .defineInRange("default_body_segment_size", 1.0, 0.001, 100);
+
+        DEFAULT_DAMAGE = BUILDER.comment("Default attack damage for snake player")
+                .defineInRange("default_damage", 1000, 0.0, Float.MAX_VALUE);
+
+        DEFAULT_SPEED = BUILDER.comment("Default movement speed for snake player")
+                .defineInRange("default_speed", 0.3, 0.0, 1.5);
+
+        BUILDER.pop();
+
+
         SPEC = BUILDER.build();
     }
 }

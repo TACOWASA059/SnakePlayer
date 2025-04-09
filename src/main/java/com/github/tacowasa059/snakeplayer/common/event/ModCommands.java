@@ -128,7 +128,7 @@ public class ModCommands {
 
                                                             Config.CX.set(cx);
                                                             Config.CZ.set(cz);
-                                                            context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Set spread position: " + cx + ", " + cz), true);
+                                                            context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Set spread position: " +ChatFormatting.AQUA+ cx + ", " + cz), true);
                                                             return 1;
                                                         })
                                                 )
@@ -141,7 +141,7 @@ public class ModCommands {
                                                     boolean enabled = BoolArgumentType.getBool(context, "enabled");
                                                     Config.enableSpread.set(enabled);
 
-                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread set to: " + enabled), true);
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread set to: " +ChatFormatting.AQUA+ enabled), true);
                                                     return 1;
                                                 })
                                         )
@@ -153,7 +153,7 @@ public class ModCommands {
                                                     double L = DoubleArgumentType.getDouble(context, "L");
                                                     Config.L.set(L);
 
-                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread range set to: " + L), true);
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Spread range set to: " +ChatFormatting.AQUA+ L), true);
                                                     return 1;
                                                 })
                                         )
@@ -165,7 +165,7 @@ public class ModCommands {
                                                     double r = DoubleArgumentType.getDouble(context, "r");
                                                     Config.R.set(r);
 
-                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Minimum spread radius set to: " + r), true);
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Minimum spread radius set to: " +ChatFormatting.AQUA+ r), true);
                                                     return 1;
                                                 })
                                         )
@@ -177,27 +177,119 @@ public class ModCommands {
                                                     int experience = IntegerArgumentType.getInteger(context, "exp");
                                                     Config.expValue.set(experience);
 
-                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Segment Experience set to: " + experience), true);
+                                                    context.getSource().sendSuccess(()->Component.literal(ChatFormatting.DARK_GREEN + "Segment Experience set to: " +ChatFormatting.AQUA+ experience), true);
                                                     return 1;
                                                 })
                                         )
                                 )
+
+                                .then(Commands.literal("default_is_snake")
+                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                                .executes(context -> {
+                                                    boolean enabled = BoolArgumentType.getBool(context, "enabled");
+                                                    Config.DEFAULT_IS_SNAKE.set(enabled);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Default is_snake set to: " +ChatFormatting.AQUA+ enabled), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("default_head_size")
+                                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 100))
+                                                .executes(context -> {
+                                                    double v = DoubleArgumentType.getDouble(context, "value");
+                                                    Config.DEFAULT_HEAD_SIZE.set(v);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Default head size set to: " +ChatFormatting.AQUA+ v), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("default_body_segment_size")
+                                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 100))
+                                                .executes(context -> {
+                                                    double v = DoubleArgumentType.getDouble(context, "value");
+                                                    Config.DEFAULT_BODY_SEGMENT_SIZE.set(v);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Default body segment size set to: " +ChatFormatting.AQUA+ v), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("default_damage")
+                                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, Float.MAX_VALUE))
+                                                .executes(context -> {
+                                                    double v = DoubleArgumentType.getDouble(context, "value");
+                                                    Config.DEFAULT_DAMAGE.set(v);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Default snake damage set to: " +ChatFormatting.AQUA+ v), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("default_speed")
+                                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 1.5))
+                                                .executes(context -> {
+                                                    double v = DoubleArgumentType.getDouble(context, "value");
+                                                    Config.DEFAULT_SPEED.set(v);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Default snake speed set to: " +ChatFormatting.AQUA+ v), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+
+                                .then(Commands.literal("spawn_block_view_distance")
+                                        .then(Commands.argument("distance", IntegerArgumentType.integer(0, 128))
+                                                .executes(context -> {
+                                                    int distance = IntegerArgumentType.getInteger(context, "distance");
+                                                    Config.SPAWN_BLOCK_VIEW_DISTANCE.set(distance);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Set view-blocking spawn distance to: " +ChatFormatting.AQUA+ distance), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("spawn_block_view_half_width")
+                                        .then(Commands.argument("halfWidth", IntegerArgumentType.integer(0, 64))
+                                                .executes(context -> {
+                                                    int width = IntegerArgumentType.getInteger(context, "halfWidth");
+                                                    Config.SPAWN_BLOCK_VIEW_HALF_WIDTH.set(width);
+                                                    context.getSource().sendSuccess(() ->
+                                                            Component.literal(ChatFormatting.DARK_GREEN + "Set view-blocking spawn half-width to: " +ChatFormatting.AQUA+ width), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+
+
+
                         )
                         // Get current config values
                         .then(Commands.literal("get")
                                 .then(Commands.argument("key", StringArgumentType.string())
                                         .suggests((context, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
-                                                new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance", "segment_experience"}, builder
+                                                new String[]{"spread_pos", "spread", "spread_Range", "spread_minimum_distance", "segment_experience",
+                                                        "default_is_snake", "default_head_size", "default_body_segment_size", "default_damage", "default_speed",
+                                                        "spawn_block_view_distance", "spawn_block_view_half_width"}, builder
                                         ))
                                         .executes(context -> {
                                             String key = StringArgumentType.getString(context, "key");
                                             String value;
                                             switch (key) {
-                                                case "spread_pos" -> value = "CX: " + Config.CX.get() + ", CZ: " + Config.CZ.get();
-                                                case "spread" -> value = "Spread Enabled: " + Config.enableSpread.get();
-                                                case "spread_Range" -> value = "Spread Range: " + Config.L.get();
-                                                case "spread_minimum_distance" -> value = "Minimum Spread Radius: " + Config.R.get();
-                                                case "segment_experience" -> value = "Experience Level "+Config.expValue.get();
+                                                case "spread_pos" -> value = "CX: " + ChatFormatting.AQUA + Config.CX.get() + ChatFormatting.DARK_GREEN+", CZ: " +ChatFormatting.AQUA + Config.CZ.get();
+                                                case "spread" -> value = "Spread Enabled: " +ChatFormatting.AQUA + Config.enableSpread.get();
+                                                case "spread_Range" -> value = "Spread Range: " +ChatFormatting.AQUA + Config.L.get();
+                                                case "spread_minimum_distance" -> value = "Minimum Spread Radius: " +ChatFormatting.AQUA + Config.R.get();
+                                                case "segment_experience" -> value = "Experience Level "+ChatFormatting.AQUA+Config.expValue.get();
+                                                case "default_is_snake" -> value = "Default Is Snake: " + ChatFormatting.AQUA + Config.DEFAULT_IS_SNAKE.get();
+                                                case "default_head_size" -> value = "Default Head Size: " + ChatFormatting.AQUA + Config.DEFAULT_HEAD_SIZE.get();
+                                                case "default_body_segment_size" -> value = "Default Body Segment Size: " + ChatFormatting.AQUA + Config.DEFAULT_BODY_SEGMENT_SIZE.get();
+                                                case "default_damage" -> value = "Default Damage: " + ChatFormatting.AQUA + Config.DEFAULT_DAMAGE.get();
+                                                case "default_speed" -> value = "Default Speed: " + ChatFormatting.AQUA + Config.DEFAULT_SPEED.get();
+                                                case "spawn_block_view_distance" -> value = "Spawn block view distance: " + ChatFormatting.AQUA + Config.SPAWN_BLOCK_VIEW_DISTANCE.get();
+                                                case "spawn_block_view_half_width" -> value = "Spawn block view half-width: " + ChatFormatting.AQUA + Config.SPAWN_BLOCK_VIEW_HALF_WIDTH.get();
+
                                                 default -> {
                                                     context.getSource().sendFailure(Component.literal(ChatFormatting.RED + "Invalid config key."));
                                                     return 0;

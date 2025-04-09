@@ -23,6 +23,11 @@ public class ClientPlayerUtils {
         }
     }
 
+    /**
+     * カメラ視点
+     * @param partialTicks partialTicks
+     * @return interpolated cameraViewYRot
+     */
     public static float getCameraViewYRot(float partialTicks) {
         return partialTicks == 1.0F ? ClientPlayerUtils.CameraYRot0 : Mth.lerp(partialTicks, ClientPlayerUtils.CameraYRot0, ClientPlayerUtils.CameraYRot);
     }

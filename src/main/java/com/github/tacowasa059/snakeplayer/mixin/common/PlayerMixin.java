@@ -89,31 +89,14 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         return playerPosition.add(offsetX, 0, offsetZ);
     }
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    private void onConstructed(CallbackInfo ci) {
-        if(!snakePlayer$getIsSnake()) return;
-        Player player = (Player)(Object)this;
-        int current_length = player.getEntityData().get(SNAKE_EXPERIENCE) + 1;
-
-        snakePlayer$partID = 0;
-        for(int i = 0; i < current_length; i++){
-            PlayerPart playerPart = new PlayerPart(player,"part"+ snakePlayer$partID);
-            snakePlayer$subEntities.add(playerPart);
-            snakePlayer$partID++;
-
-            playerPart.setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$partID - 1) * snakePlayer$getBodySegmentSize() + ((snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f)));
-            playerPart.setOldPosAndRot();
-        }
-    }
-
     @Inject(method="defineSynchedData",at=@At("TAIL"))
     void defineSynchedData(CallbackInfo ci){
         Player player = (Player) (Object)this;
-        player.getEntityData().define(IS_Snake, false);
-        player.getEntityData().define(HEAD_SIZE, 1.0F);
-        player.getEntityData().define(BODY_SEGMENT_SIZE, 1.0F);
-        player.getEntityData().define(SNAKE_DAMAGE, 1.0F);
-        player.getEntityData().define(SNAKE_SPEED, 0.3F);
+        player.getEntityData().define(IS_Snake, Config.DEFAULT_IS_SNAKE.get());
+        player.getEntityData().define(HEAD_SIZE, Config.DEFAULT_HEAD_SIZE.get().floatValue());
+        player.getEntityData().define(BODY_SEGMENT_SIZE, Config.DEFAULT_BODY_SEGMENT_SIZE.get().floatValue());
+        player.getEntityData().define(SNAKE_DAMAGE, Config.DEFAULT_DAMAGE.get().floatValue());
+        player.getEntityData().define(SNAKE_SPEED, Config.DEFAULT_SPEED.get().floatValue());
         player.getEntityData().define(SNAKE_EXPERIENCE, 0);
         player.getEntityData().define(PART_POSITIONS, new ArrayList<>());
     }

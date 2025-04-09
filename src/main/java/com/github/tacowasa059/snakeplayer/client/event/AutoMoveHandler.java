@@ -16,7 +16,10 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = SnakePlayer.MODID, value = Dist.CLIENT)
 public class AutoMoveHandler {
 
-
+    /**
+     * 自動前進の設定
+     * @param event event
+     */
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END || Minecraft.getInstance().player == null) {
