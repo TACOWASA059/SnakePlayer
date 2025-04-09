@@ -1,6 +1,6 @@
-package com.github.tacowasa059.snakeplayer.mixin;
+package com.github.tacowasa059.snakeplayer.mixin.client;
 
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.culling.Frustum;

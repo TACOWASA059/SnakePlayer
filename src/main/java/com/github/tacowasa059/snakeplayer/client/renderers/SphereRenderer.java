@@ -1,4 +1,4 @@
-package com.github.tacowasa059.snakeplayer.client.utils;
+package com.github.tacowasa059.snakeplayer.client.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -19,17 +19,17 @@ public class SphereRenderer {
         poseStack.mulPose(Axis.YP.rotationDegrees(45));
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(texture));
-        addBottomSphere(radius, segments, x, 0, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F, 0.1875F-0.125F,false,packedLight,lightmap2,overlay);
-        addBottomSphere(radius*1.01F, segments, x, 0, z, vertexConsumer, positionMatrix,normalMatrix,0.1875F+0.5F, 0.1875F-0.125F,false,packedLight,lightmap2,overlay);
+        addBottomSphere(radius, segments, x, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F, false,packedLight,lightmap2,overlay);
+        addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, positionMatrix,normalMatrix,0.1875F+0.5F, false,packedLight,lightmap2,overlay);
 
-        addBottomSphere(radius, segments, x, 0, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F+0.125F, 0.1875F-0.125F,true,packedLight,lightmap2,overlay);
-        addBottomSphere(radius*1.01F, segments, x, 0, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F+0.125F+0.5F, 0.1875F-0.125F,true,packedLight,lightmap2,overlay);
-        addSideSphere(radius, segments, x,0, z, vertexConsumer,positionMatrix,normalMatrix,false,packedLight,lightmap2,overlay);
-        addSideSphere(radius*1.01F, segments, x,0, z, vertexConsumer,positionMatrix,normalMatrix,true,packedLight,lightmap2,overlay);
+        addBottomSphere(radius, segments, x, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F+0.125F, true,packedLight,lightmap2,overlay);
+        addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, positionMatrix, normalMatrix,0.1875F+0.125F+0.5F, true,packedLight,lightmap2,overlay);
+        addSideSphere(radius, segments, x, z, vertexConsumer,positionMatrix,normalMatrix,false,packedLight,lightmap2,overlay);
+        addSideSphere(radius*1.01F, segments, x, z, vertexConsumer,positionMatrix,normalMatrix,true,packedLight,lightmap2,overlay);
 
         poseStack.mulPose(Axis.YP.rotationDegrees(-45));
     }
-    private static void addBottomSphere(float radius, int segments, float x, float y,float z, VertexConsumer vertexConsumer, Matrix4f positionMatrix,Matrix3f normalMatrix,float u0, float v0 ,boolean isLower,int packedLight,boolean lightmap2, int overlay) {
+    private static void addBottomSphere(float radius, int segments, float x, float z, VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float u0, boolean isLower, int packedLight, boolean lightmap2, int overlay) {
         // x,y,z : 基準となる座標系での中心座標
         // u0,v0 : 基準となるテクスチャ座標(底面のテクスチャ上の中心座標)
         // segments: 4の倍数の想定で、>=4
@@ -102,23 +102,23 @@ public class SphereRenderer {
 
 
                 float u = u0 + square_x;
-                float v = v0 + square_z;
+                float v = (float) 0.0625 + square_z;
                 float next_i_u = u0 + next_i_square_x;
-                float next_i_v = v0 + next_i_square_z;
+                float next_i_v = (float) 0.0625 + next_i_square_z;
                 float next_j_u = u0 + next_j_square_x;
-                float next_j_v = v0 + next_j_square_z;
+                float next_j_v = (float) 0.0625 + next_j_square_z;
                 float next_ij_u = u0 + next_ij_square_x;
-                float next_ij_v = v0 + next_ij_square_z;
+                float next_ij_v = (float) 0.0625 + next_ij_square_z;
 
                 float[]uv_list=new float[]{
                         u,v,next_i_u,next_i_v,next_j_u,next_j_v,next_ij_u,next_ij_v
                 };
-                addSideSphereQuads(vertexConsumer, positionMatrix, normalMatrix, x, y, z, pos_list,uv_list,packedLight,lightmap2,overlay);
+                addSideSphereQuads(vertexConsumer, positionMatrix, normalMatrix, x, z, pos_list,uv_list,packedLight,lightmap2,overlay);
             }
         }
     }
 
-    private static void addSideSphere(float radius, int segments, float x,float y, float z, VertexConsumer vertexConsumer, Matrix4f positionMatrix,Matrix3f normalMatrix,boolean isInner,int packedLight,boolean lightmap2, int overlay) {
+    private static void addSideSphere(float radius, int segments, float x, float z, VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, boolean isInner, int packedLight, boolean lightmap2, int overlay) {
         for (int j = Math.round(segments/4f); j< Math.round(3*segments/4f);j++) {
             float theta= (float) (Math.PI*j/(4 * Math.round(segments/4f)));
             float sin_theta= (float) Math.sin(theta);
@@ -151,11 +151,9 @@ public class SphereRenderer {
                 float u = 0.5F * i / segments;
                 float v = 0.125F + 0.125F*(j-Math.round(segments/4f))/Math.round(segments/2f);
                 float next_i_u = 0.5F * (i+1) / segments;
-                float next_i_v = v;
                 float next_j_u = 0.5F * i / segments;
                 float next_j_v = 0.125F + 0.125F*(j+1-Math.round(segments/4f))/Math.round(segments/2f);
                 float next_ij_u = 0.5F * (i+1) / segments;
-                float next_ij_v = next_j_v;
 
                 if (isInner) {
                     u += 0.5F;
@@ -164,38 +162,38 @@ public class SphereRenderer {
                     next_ij_u += 0.5F;
                 }
                 float[]uv_list=new float[]{
-                        u,v,next_i_u,next_i_v,next_j_u,next_j_v,next_ij_u,next_ij_v
+                        u,v,next_i_u, v,next_j_u,next_j_v,next_ij_u, next_j_v
                 };
 
-                addSideSphereQuads(vertexConsumer, positionMatrix, normalMatrix, x, y, z, pos_list, uv_list, packedLight,lightmap2,overlay);
+                addSideSphereQuads(vertexConsumer, positionMatrix, normalMatrix, x, z, pos_list, uv_list, packedLight,lightmap2,overlay);
             }
         }
     }
-    private static void addSideSphereQuads(VertexConsumer vvertexConsumer,Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float y, float z,float[] pos_list,float[]uv_list,int packedLight,boolean lightmap2, int overlay) {
+    private static void addSideSphereQuads(VertexConsumer vvertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float z, float[] pos_list, float[]uv_list, int packedLight, boolean lightmap2, int overlay) {
         if(lightmap2){
-            vvertexConsumer.vertex(positionMatrix, pos_list[0]+x, pos_list[1]+y, pos_list[2]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[0]+x, pos_list[1]+ (float) 0.0, pos_list[2]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[0],uv_list[1]).overlayCoords(overlay).uv2(packedLight).normal(normalMatrix, pos_list[0],pos_list[1],pos_list[2]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[3]+x, pos_list[4]+y, pos_list[5]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[3]+x, pos_list[4]+ (float) 0.0, pos_list[5]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[2],uv_list[3]).overlayCoords(overlay).uv2(packedLight).normal(normalMatrix, pos_list[3], pos_list[4], pos_list[5]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[9]+x, pos_list[10]+y, pos_list[11]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[9]+x, pos_list[10]+ (float) 0.0, pos_list[11]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[6],uv_list[7]).overlayCoords(overlay).uv2(packedLight).normal(normalMatrix, pos_list[9], pos_list[10], pos_list[11]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[6]+x, pos_list[7]+y, pos_list[8]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[6]+x, pos_list[7]+ (float) 0.0, pos_list[8]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[4],uv_list[5]).overlayCoords(overlay).uv2(packedLight).normal(normalMatrix, pos_list[6], pos_list[7], pos_list[8]).endVertex();
         }else{
-            vvertexConsumer.vertex(positionMatrix, pos_list[0]+x, pos_list[1]+y, pos_list[2]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[0]+x, pos_list[1]+ (float) 0.0, pos_list[2]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[0],uv_list[1]).overlayCoords(overlay).uv2(packedLight).normal(pos_list[0],pos_list[1],pos_list[2]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[3]+x, pos_list[4]+y, pos_list[5]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[3]+x, pos_list[4]+ (float) 0.0, pos_list[5]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[2],uv_list[3]).overlayCoords(overlay).uv2(packedLight).normal(pos_list[3], pos_list[4], pos_list[5]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[9]+x, pos_list[10]+y, pos_list[11]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[9]+x, pos_list[10]+ (float) 0.0, pos_list[11]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[6],uv_list[7]).overlayCoords(overlay).uv2(packedLight).normal(pos_list[9], pos_list[10], pos_list[11]).endVertex();
-            vvertexConsumer.vertex(positionMatrix, pos_list[6]+x, pos_list[7]+y, pos_list[8]+z)
+            vvertexConsumer.vertex(positionMatrix, pos_list[6]+x, pos_list[7]+ (float) 0.0, pos_list[8]+z)
                     .color(1.0f, 1.0f, 1.0f, 1.0f)
                     .uv(uv_list[4],uv_list[5]).overlayCoords(overlay).uv2(packedLight).normal(pos_list[6], pos_list[7], pos_list[8]).endVertex();
         }

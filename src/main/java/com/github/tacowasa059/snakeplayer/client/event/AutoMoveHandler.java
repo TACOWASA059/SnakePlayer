@@ -1,6 +1,6 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import net.minecraft.client.Minecraft;
@@ -26,7 +26,6 @@ public class AutoMoveHandler {
         LocalPlayer player = Minecraft.getInstance().player;
         IPlayerData playerData = (IPlayerData)player;
         if(!playerData.snakePlayer$getIsSnake() || player.isSpectator() || player.isCreative()) return;
-        if(!player.onGround())return;
 
         // 現在の速度を取得
         Vec3 currentVelocity = player.getDeltaMovement();
@@ -47,16 +46,28 @@ public class AutoMoveHandler {
         }
 
         double additionalSpeed = playerData.snakePlayer$getSnakeSpeed();
+        if(!player.onGround() && !player.isInWater() && !player.isInLava()){
+            additionalSpeed *= 0.2f;
+        }
 
-        Vec3 newVelocity = currentVelocity.add(
-                forward.x * additionalSpeed,
-                0.0,
-                forward.z * additionalSpeed
-        );
+        Vec3 rel = new Vec3(forward.x, 0, forward.z);
 
-        // 新しい速度を設定
+        rel = rotateVec3AroundY(rel, - 35 * player.input.leftImpulse * Math.PI/180f);
+
+
+        Vec3 newVelocity = currentVelocity.add(rel.scale(additionalSpeed));
+
+
         player.setDeltaMovement(newVelocity);
 
+    }
+
+    public static Vec3 rotateVec3AroundY(Vec3 vec, double thetaRadians) {
+        double cos = Math.cos(thetaRadians);
+        double sin = Math.sin(thetaRadians);
+        double x = vec.x * cos - vec.z * sin;
+        double z = vec.x * sin + vec.z * cos;
+        return new Vec3(x, vec.y, z);
     }
 
 }

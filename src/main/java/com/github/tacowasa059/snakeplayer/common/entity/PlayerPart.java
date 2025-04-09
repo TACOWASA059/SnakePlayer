@@ -1,6 +1,6 @@
 package com.github.tacowasa059.snakeplayer.common.entity;
 
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -10,7 +10,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,18 +63,6 @@ public class PlayerPart extends PartEntity<Player> {
 
     public boolean shouldBeSaved() {
         return false;
-    }
-
-    public void setOldPos(Vec3 vec3){
-        double d0 = vec3.x;
-        double d1 = vec3.y;
-        double d2 = vec3.z;
-        this.xo = d0;
-        this.yo = d1;
-        this.zo = d2;
-        this.xOld = d0;
-        this.yOld = d1;
-        this.zOld = d2;
     }
 
 }

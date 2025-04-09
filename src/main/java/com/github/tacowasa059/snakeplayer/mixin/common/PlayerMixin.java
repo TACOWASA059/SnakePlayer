@@ -1,7 +1,8 @@
-package com.github.tacowasa059.snakeplayer.mixin;
+package com.github.tacowasa059.snakeplayer.mixin.common;
 
-import com.github.tacowasa059.snakeplayer.Config;
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.client.util.ClientPlayerUtils;
+import com.github.tacowasa059.snakeplayer.common.Config;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.common.entity.ModDataSerializers;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import net.minecraft.core.Holder;
@@ -68,9 +69,6 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
     @Unique
     private static final EntityDataAccessor<List<Vec3>> PART_POSITIONS = SynchedEntityData.defineId(
             Player.class, ModDataSerializers.VEC3_LIST);
-    @Unique
-    private static final EntityDataAccessor<List<Vec3>> PREV_PART_POSITIONS = SynchedEntityData.defineId(
-            Player.class, ModDataSerializers.VEC3_LIST);
 
 
     /**
@@ -115,98 +113,165 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
         player.getEntityData().define(HEAD_SIZE, 1.0F);
         player.getEntityData().define(BODY_SEGMENT_SIZE, 1.0F);
         player.getEntityData().define(SNAKE_DAMAGE, 1.0F);
-        player.getEntityData().define(SNAKE_SPEED, 0.2F);
+        player.getEntityData().define(SNAKE_SPEED, 0.3F);
         player.getEntityData().define(SNAKE_EXPERIENCE, 0);
         player.getEntityData().define(PART_POSITIONS, new ArrayList<>());
-        player.getEntityData().define(PREV_PART_POSITIONS, new ArrayList<>());
     }
 
+    /**
+     * tick処理
+     * @param ci CallbackInfo
+     */
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
         Player player = (Player)(Object)this;
-        float tolerance = 0.05f;
 
-        if(!snakePlayer$getIsSnake()){
-            if(player.level().isClientSide()){
-                float width = (float) player.getBoundingBox().getXsize();
-                float height = (float) player.getBoundingBox().getYsize();
-                EntityDimensions entityDimensions = player.getDimensions(player.getPose());
-                if(Math.abs(entityDimensions.width - width) > tolerance ||
-                        Math.abs(entityDimensions.height - height) > tolerance){
-                    player.refreshDimensions();
-                }
-            }
-            return;
-        }
-
+        if (snakePlayer$restorePlayer(player)) return;
 
         float parts_size = snakePlayer$getBodySegmentSize();
 
         // update entity length
-        int target_length = player.getEntityData().get(SNAKE_EXPERIENCE) + 1;
-        int current_length = snakePlayer$subEntities.size();
+        snakePlayer$updateSegmentLength(player, parts_size);
 
-        while(target_length > current_length){ //少ない場合は追加する
-            PlayerPart playerPart = new PlayerPart(player,"part"+ snakePlayer$partID);
-            snakePlayer$subEntities.add(playerPart);
-            snakePlayer$partID++;
-            current_length = snakePlayer$subEntities.size();
-            Vec3 vec3;
-            if(current_length == 1){
-                 vec3 = snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f); //need modify
+        // update position length (only server side)
+        snakePlayer$updateServerPositions(player, parts_size);
 
-            }else if (current_length == 2){ // ひとつ前の値に足し合わせる
-                Vec3 vec0 = player.position();
-                Vec3 vec1 = snakePlayer$subEntities.get(0).position();
-                vec3 = vec1.add((vec1.subtract(vec0)).normalize().scale(parts_size));
-            }else{
-                Vec3 vec0 = snakePlayer$subEntities.get(current_length-3).position();
-                Vec3 vec1 = snakePlayer$subEntities.get(current_length-2).position();
-                vec3 = vec1.add((vec1.subtract(vec0)).normalize().scale(parts_size));
+        //sync position of each segments
+        snakePlayer$syncPositions(player);
+
+        // damage (only server side)
+        snakePlayer$SetDamage(player);
+
+        // refreshDimensions (only client side)
+        snakePlayer$updateAABB(player);
+
+    }
+
+
+    /**
+     * セグメントの座標更新
+     * @param player player
+     * @param parts_size parts size
+     */
+    @Unique
+    public void snakePlayer$updateServerPositions(Player player, float parts_size) {
+        if(!player.level().isClientSide){
+            if(snakePlayer$subEntities.size()>0){
+                snakePlayer$subEntities.get(0).setOldPosAndRot();
+                snakePlayer$subEntities.get(0).setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f));
             }
-            playerPart.setPos(vec3);
-            playerPart.setOldPosAndRot();
-        }
-        while(target_length < current_length){ //多い場合は減らす
-            PlayerPart playerPart = snakePlayer$subEntities.get(snakePlayer$subEntities.size()-1);
+            for(int i = 1; i< snakePlayer$subEntities.size(); i++){
+                Vec3 x0 = snakePlayer$subEntities.get(i-1).position();
+                Vec3 x1_1 = snakePlayer$subEntities.get(i).position();
 
-            double x = playerPart.getX();
-            double y = playerPart.getY();
-            double z = playerPart.getZ();
+                Vec3 x1 = x0.subtract((x0.subtract(x1_1)).normalize().scale(parts_size));
 
-            int experienceAmount = Config.expValue.get();
-            if(experienceAmount>0){
-                ExperienceOrb experienceOrb = new ExperienceOrb(playerPart.level(), x, y, z, experienceAmount);
-                experienceOrb.setDeltaMovement(0.0, 0.1, 0.0);
-                playerPart.level().addFreshEntity(experienceOrb);
+                snakePlayer$subEntities.get(i).setOldPosAndRot();
+                snakePlayer$subEntities.get(i).setPos(x1);
             }
-
-            playerPart.remove(Entity.RemovalReason.DISCARDED);
-            snakePlayer$subEntities.remove(snakePlayer$subEntities.size()-1);
-            snakePlayer$partID--;
-            current_length = snakePlayer$subEntities.size();
         }
+    }
 
-        // update position length
+    /**
+     * Clientでのセグメントの座標更新 (位置補正)
+     * @param player player
+     * @param parts_size parts size
+     */
+    @Unique
+    public void snakePlayer$updateClientPositions(Player player, float parts_size) {
+        if(player.level().isClientSide){
+            if(snakePlayer$subEntities.size()>0){
+                snakePlayer$subEntities.get(0).setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f));
+            }
+            for(int i = 1; i< snakePlayer$subEntities.size(); i++){
+                Vec3 x0 = snakePlayer$subEntities.get(i-1).position();
+                Vec3 x1_1 = snakePlayer$subEntities.get(i).position();
 
-        if(snakePlayer$subEntities.size()>0){
-            snakePlayer$subEntities.get(0).setOldPosAndRot();
-            snakePlayer$subEntities.get(0).setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f));
+                Vec3 x1 = x0.subtract((x0.subtract(x1_1)).normalize().scale(parts_size));
+
+                snakePlayer$subEntities.get(i).setPos(x1);
+            }
         }
-        for(int i = 1; i< snakePlayer$subEntities.size(); i++){
-            Vec3 x0 = snakePlayer$subEntities.get(i-1).position();
-            Vec3 x1_1 = snakePlayer$subEntities.get(i).position();
-            Vec3 x1 = x0.subtract((x0.subtract(x1_1)).normalize().scale(parts_size));
-            snakePlayer$subEntities.get(i).setOldPosAndRot();
-            snakePlayer$subEntities.get(i).setPos(x1);
-        }
-        float damageAmount = snakePlayer$getSnakeDamage(); // ダメージ量
-        // update position of each partEntity
-        if((!player.isDeadOrDying())&&(!player.isSpectator())){ // 死んでいないときのみ
+    }
+
+    /**
+     * セグメント座標の同期処理
+     * @param player 対象となるプレイヤー
+     */
+    @Unique
+    public void snakePlayer$syncPositions(Player player) {
+        if(!player.level().isClientSide()){ //server side
+            List<Vec3> partPositions = new ArrayList<>();
+
+            partPositions.add(player.position());
             for(PlayerPart playerPart: snakePlayer$subEntities){
+                partPositions.add(new Vec3(playerPart.getX(), playerPart.getY(), playerPart.getZ()));
+            }
+
+            player.getEntityData().set(PART_POSITIONS, partPositions, true);
+
+        }else{ // client side
+            List<Vec3> partPositions = player.getEntityData().get(PART_POSITIONS);
+
+            if(partPositions.size()>0) ClientPlayerUtils.SetPosIfRemote(player, partPositions.get(0));
+
+            for(int i = 0; i < Math.min(partPositions.size()-1, snakePlayer$subEntities.size()); i++){
+                Vec3 pos = partPositions.get(i+1);
+
+                PlayerPart playerPart = snakePlayer$subEntities.get(i);
+                if(playerPart != null){
+                    playerPart.setOldPosAndRot();
+                    playerPart.setPos(pos);
+                }
+
+            }
+            snakePlayer$updateClientPositions(player, snakePlayer$getBodySegmentSize());
+        }
+    }
+
+    /**
+     * AABBの更新
+     *
+     * @param player player
+     */
+    @Unique
+    private void snakePlayer$updateAABB(Player player) {
+        if(player.level().isClientSide() && player.tickCount % 5 == 0){
+
+            float width = (float) player.getBoundingBox().getXsize();
+            float height = (float) player.getBoundingBox().getYsize();
+
+            float current_size = snakePlayer$getHeadSize();
+            if(Math.abs(current_size - width)> (float) 0.05 || Math.abs(current_size - height)> (float) 0.05){
+                player.refreshDimensions();
+            }
+
+            float current_segment_size = snakePlayer$getBodySegmentSize();
+            for(PlayerPart playerPart : snakePlayer$subEntities){
+                float parts_width = (float) playerPart.getBoundingBox().getXsize();
+                float parts_height = (float) playerPart.getBoundingBox().getYsize();
+                if(Math.abs(current_segment_size - parts_width)> (float) 0.05 ||
+                        Math.abs(current_segment_size - parts_height)> (float) 0.05){
+                    playerPart.refreshDimensions();
+                }
+            }
+
+        }
+    }
+
+    /**
+     * ダメージの設定
+     * @param player 基準となるプレイヤー
+     */
+    @Unique
+    private void snakePlayer$SetDamage(Player player) {
+        float damageAmount = snakePlayer$getSnakeDamage(); // ダメージ量
+        if((!player.level().isClientSide) && (!player.isDeadOrDying())&&(!player.isSpectator())){ // 死んでいないときのみ
+            for(PlayerPart playerPart: snakePlayer$subEntities){
+                if(playerPart.isRemoved()) continue;
                 Level level = playerPart.level();
                 AABB boundingBox = playerPart.getBoundingBox();
-                List<Entity> entities = level.getEntities(playerPart, boundingBox, entity -> (entity instanceof LivingEntity && entity.getId()!=player.getId()));
+                List<Entity> entities = level.getEntities(playerPart, boundingBox, entity -> (entity instanceof LivingEntity && entity.getId()!= player.getId()));
 
                 Holder<DamageType> damageTypeHolder = level.registryAccess()
                         .registryOrThrow(Registries.DAMAGE_TYPE)
@@ -225,55 +290,97 @@ public abstract class PlayerMixin implements IPlayerData, IForgeEntity {
                 }
             }
         }
+    }
 
 
-        if(player.level().isClientSide() && player.tickCount % 5 == 0){//client side only(refreshDimensions)
 
-            float width = (float) player.getBoundingBox().getXsize();
-            float height = (float) player.getBoundingBox().getYsize();
+    /**
+     * セグメント数の変更
+     * @param player player
+     * @param parts_size segment size
+     */
+    @Unique
+    private void snakePlayer$updateSegmentLength(Player player, float parts_size) {
+        int target_length = player.getEntityData().get(SNAKE_EXPERIENCE) + 1;
+        int current_length = snakePlayer$subEntities.size();
 
-            float current_size = snakePlayer$getHeadSize();
-            if(Math.abs(current_size - width)>tolerance || Math.abs(current_size - height)>tolerance){
-                player.refreshDimensions();
-            }
+        int addition = 0;
 
-            float current_segment_size = snakePlayer$getBodySegmentSize();
-            for(PlayerPart playerPart : snakePlayer$subEntities){
-                float parts_width = (float) playerPart.getBoundingBox().getXsize();
-                float parts_height = (float) playerPart.getBoundingBox().getYsize();
-                if(Math.abs(current_segment_size - parts_width)>tolerance ||
-                        Math.abs(current_segment_size - parts_height)>tolerance){
-                    playerPart.refreshDimensions();
+        while(target_length > current_length){ //少ない場合は追加する
+            PlayerPart playerPart = new PlayerPart(player,"part"+ snakePlayer$partID);
+            snakePlayer$subEntities.add(playerPart);
+            snakePlayer$partID++;
+            current_length = snakePlayer$subEntities.size();
+            Vec3 vec3;
+            if(current_length == 1){
+                 vec3 = snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f); //need modify
+
+            }else if (current_length == 2){ // ひとつ前の値に足し合わせる
+                Vec3 vec0 = player.position();
+                Vec3 vec1 = snakePlayer$subEntities.get(0).position();
+                vec3 = vec1.add((vec1.subtract(vec0)).normalize().scale(parts_size));
+            }else{
+                Vec3 vec0 = snakePlayer$subEntities.get(current_length-3).position();
+                Vec3 vec1 = snakePlayer$subEntities.get(current_length-2).position();
+                Vec3 relative = (vec1.subtract(vec0)).normalize().scale(parts_size);
+
+                if(addition > 4){ // added : 急に増えたとき用
+                    relative = new Vec3(-relative.x, relative.y, -relative.z);
                 }
-            }
 
+                vec3 = vec1.add(relative);
+            }
+            playerPart.setPos(vec3);
+            playerPart.setOldPosAndRot();
+
+            addition++;
         }
+        while(target_length < current_length){ //多い場合は減らす
+            PlayerPart playerPart = snakePlayer$subEntities.get(snakePlayer$subEntities.size()-1);
 
-        if(!player.level().isClientSide()){
-            List<Vec3> partPositions = new ArrayList<>();
-            List<Vec3> prevPartPositions = new ArrayList<>();
-            for(PlayerPart playerPart: snakePlayer$subEntities){
-                partPositions.add(new Vec3(playerPart.getX(), playerPart.getY(), playerPart.getZ()));
-                prevPartPositions.add(new Vec3(playerPart.xo, playerPart.yo, playerPart.zo));
-            }
-            player.getEntityData().set(PART_POSITIONS, partPositions);
-            player.getEntityData().set(PREV_PART_POSITIONS, prevPartPositions);
-        }else{
-            List<Vec3> partPositions = player.getEntityData().get(PART_POSITIONS);
-            List<Vec3> prevPartPositions = player.getEntityData().get(PREV_PART_POSITIONS);
-            for(int i = 0; i < Math.min(partPositions.size(), snakePlayer$subEntities.size()); i++){
-                Vec3 pos = partPositions.get(i);
-                Vec3 prev_pos = prevPartPositions.get(i);
+            double x = playerPart.getX();
+            double y = playerPart.getY();
+            double z = playerPart.getZ();
 
-                PlayerPart playerPart= snakePlayer$subEntities.get(i);
-                if(playerPart!=null){
-                    playerPart.setOldPos(prev_pos);
-                    playerPart.setPos(pos);
+            if(!player.level().isClientSide){
+                int experienceAmount = Config.expValue.get();
+                if(experienceAmount > 0){
+                    ExperienceOrb experienceOrb = new ExperienceOrb(playerPart.level(), x, y, z, experienceAmount);
+                    experienceOrb.setDeltaMovement(0.0, 0.1, 0.0);
+                    playerPart.level().addFreshEntity(experienceOrb);
                 }
-
             }
+
+            playerPart.remove(Entity.RemovalReason.DISCARDED);
+            snakePlayer$subEntities.remove(snakePlayer$subEntities.size()-1);
+            snakePlayer$partID--;
+            current_length = snakePlayer$subEntities.size();
         }
     }
+
+    /**
+     * プレイヤー状態に戻す処理(client)
+     *
+     * @param player player
+     * @return 蛇状態でない
+     */
+    @Unique
+    private boolean snakePlayer$restorePlayer(Player player) {
+        if(!snakePlayer$getIsSnake()){
+            if(player.level().isClientSide()){
+                float width = (float) player.getBoundingBox().getXsize();
+                float height = (float) player.getBoundingBox().getYsize();
+                EntityDimensions entityDimensions = player.getDimensions(player.getPose());
+                if(Math.abs(entityDimensions.width - width) > (float) 0.05 ||
+                        Math.abs(entityDimensions.height - height) > (float) 0.05){
+                    player.refreshDimensions();
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     @Unique
     public void snakePlayer$removeSubEntities(){
         for(int i = snakePlayer$subEntities.size()-1; i>=0; i--){

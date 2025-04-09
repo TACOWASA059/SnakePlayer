@@ -1,12 +1,10 @@
-package com.github.tacowasa059.snakeplayer.event;
+package com.github.tacowasa059.snakeplayer.common.event;
 
-import com.github.tacowasa059.snakeplayer.Config;
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Config;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
-import com.github.tacowasa059.snakeplayer.utils.GridManager;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import com.github.tacowasa059.snakeplayer.common.utils.GridManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,8 +22,6 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = SnakePlayer.MODID,bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerSpawnEventListener {
-
-    private static final GridManager gridManager = new GridManager();
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) { //respawn + change dimension
@@ -53,14 +49,11 @@ public class PlayerSpawnEventListener {
 
         if(!player.level().isClientSide()){
             if(Config.enableSpread.get()){
-                double[] vec = gridManager.sampleValidPoint(player);
+                double[] vec = SnakePlayer.gridManager.sampleValidPoint(player);
                 if(vec!=null){
-//                    player.sendSystemMessage(Component.literal("find a valid location"));
+
                     player.teleportTo(vec[0], vec[1], vec[2]);
                     player.setOldPosAndRot();
-                }
-                else{
-                    player.sendSystemMessage(Component.literal(ChatFormatting.RED +"cannot find a valid location"));
                 }
             }
         }
@@ -83,7 +76,7 @@ public class PlayerSpawnEventListener {
         MinecraftServer server=event.getServer();
         if(server.getTickCount() % 10 == 0){
             GridManager.server = server;
-            gridManager.updateGrid();
+            SnakePlayer.gridManager.updateGrid();
         }
     }
 

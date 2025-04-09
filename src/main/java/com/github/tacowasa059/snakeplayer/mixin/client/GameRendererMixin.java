@@ -1,6 +1,6 @@
-package com.github.tacowasa059.snakeplayer.mixin;
+package com.github.tacowasa059.snakeplayer.mixin.client;
 
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     /**
-     * 振動を無効化
+     * 歩く時の振動を無効化
      */
     @Inject(method = "bobView",at = @At("HEAD"),cancellable = true)
     private void bobView(PoseStack p_109139_, float p_109140_, CallbackInfo ci){

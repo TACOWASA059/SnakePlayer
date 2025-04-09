@@ -1,7 +1,7 @@
-package com.github.tacowasa059.snakeplayer.event;
+package com.github.tacowasa059.snakeplayer.common.event;
 
-import com.github.tacowasa059.snakeplayer.Config;
-import com.github.tacowasa059.snakeplayer.Interface.IPlayerData;
+import com.github.tacowasa059.snakeplayer.common.Config;
+import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.*;
@@ -94,10 +94,10 @@ public class ModCommands {
                     }
                 }
                 case "speed" -> {
-                    if (value >= 0.0 && value <= 0.75) {
+                    if (value >= 0.0 && value <= 1.5) {
                         playerData.snakePlayer$setSnakeSpeed(value);
                     } else {
-                        source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for speed: " + value + ChatFormatting.RED + " (Range: 0.0 - 0.75)"));
+                        source.sendFailure(Component.literal(ChatFormatting.RED + "Invalid value for speed: " + value + ChatFormatting.RED + " (Range: 0.0 - 1.5)"));
                         return 0;
                     }
                 }

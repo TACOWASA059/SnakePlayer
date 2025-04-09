@@ -1,6 +1,7 @@
-package com.github.tacowasa059.snakeplayer.Interface;
+package com.github.tacowasa059.snakeplayer.common.Interface;
 
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
 
@@ -22,5 +23,9 @@ public interface IPlayerData {
     void snakePlayer$setSnakeSpeed(float value);
 
     void snakePlayer$setSnakeExperience(int experience);
+
+    void snakePlayer$updateServerPositions(Player player, float parts_size);
+
+    void snakePlayer$syncPositions(Player player);
 
 }

@@ -1,4 +1,4 @@
-package com.github.tacowasa059.snakeplayer;
+package com.github.tacowasa059.snakeplayer.common;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 

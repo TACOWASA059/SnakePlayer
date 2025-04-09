@@ -28,9 +28,8 @@ public class Vec3ListDataSerializer implements EntityDataSerializer<List<Vec3>> 
         }
         return positions;
     }
-
     @Override
-    public @NotNull List<Vec3> copy(@NotNull List<Vec3> value) {
-        return new ArrayList<>(value);
+    public @NotNull List<Vec3> copy(List<Vec3> value) {
+        return value.stream().map(v -> new Vec3(v.x, v.y, v.z)).toList();
     }
 }

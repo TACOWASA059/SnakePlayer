@@ -5,15 +5,17 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "snakeplayer.refmap.json",
   "mixins": [
-    "PlayerMixin",
-    "ServerPlayerMixin"
+    "common.EntityMixin",
+    "common.PlayerMixin",
+    "common.ServerPlayerMixin"
   ],
   "client": [
-    "CameraMixin",
-    "EntityMixin",
-    "EntityRendererMixin",
-    "GameRendererMixin",
-    "LocalPlayerMixin"
+    "client.CameraMixin",
+    "client.EntityMixin",
+    "client.EntityRendererMixin",
+    "client.GameRendererMixin",
+    "client.LocalPlayerMixin",
+    "client.MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
