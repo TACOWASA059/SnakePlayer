@@ -1,73 +1,69 @@
 # Snake Player MOD
-- Forge 1.20.1
+
+- Minecraft 1.20.1
+- Forge / Fabric
+
 
 ![image](https://github.com/user-attachments/assets/cc4da5a4-3b42-460c-a41b-5a5f1f0b3c25)
 
-このModは、プレイヤーが「ヘビ化」することを可能にします。
+Snake Player is a mod that turns the player into a snake-like character with a head and multiple body segments.
+It supports configurable movement, damage, body size, and spawn spreading behavior.
 
-ヘビの長さは経験値レベル（XpLevel）に応じて伸び、自動で移動し、体に触れた他のエンティティにダメージを与えることができます。
-- プレイヤーは「ヘビモード」に変身可能。
-- 経験値レベル + 1 に応じた長さのボディセグメントを持つ。
-- ボディや動きの速度、ダメージ量などはコマンドで調整可能。
-- プレイヤーのリスポーン位置を他プレイヤーと距離を取って分散させる設定も可能。
+## Features
 
-## 仕様（NBTデータ）
-|NBTキー	|種類	|説明|
-|-----|-----|-----|
-|IsSnake	|Boolean	|ヘビモードかどうかを示すフラグ|
-|SnakeHeadSize	|Float	|ヘビ時のプレイヤーの頭サイズ|
-|SnakeBodySegmentSize	|Float	|ヘビ時のボディセグメントのサイズ|
-|SnakeDamage	|Float	|セグメントが触れたときに与えるダメージ量|
-|SnakeSpeed|	Float	|自動移動の速度（最大0.75）|
+- Snake-style player body rendering and behavior
+- Configurable body segment growth
+- Adjustable size, speed, and damage values
+- Optional spawn spreading
+- Command and config-driven parameter control
 
-## コンフィグ
-snakeplayer-common.toml に以下の項目が保存されます：
+## Config
 
-- 分散リスポーン設定（中心座標、範囲、最小距離）
+The config file is generated at `config/snakeplayer.toml`.
+If an old `snakeplayer.properties` file exists, its values are migrated when `snakeplayer.toml` does not exist yet.
 
-- 初期設定（デフォルトの頭サイズ、ダメージ量、速度など）
+| Key | Default | Type | Description |
+|-----|-----|-----|-----|
+| `enable_spread` | `false` | boolean | Enables spread-out player spawning |
+| `cx` | `0.0` | double | Center X for spawn spreading |
+| `cz` | `0.0` | double | Center Z for spawn spreading |
+| `L` | `50.0` | double | Side length of the spawn spread area |
+| `r` | `5.0` | double | Minimum distance between players |
+| `expValue` | `10` | int | Experience required per segment increase |
+| `default_is_snake` | `true` | boolean | Enables snake mode by default |
+| `default_head_size` | `1.0` | double | Default head size |
+| `default_body_segment_size` | `1.0` | double | Default body segment size |
+| `default_damage` | `1000.0` | double | Damage dealt by segment contact |
+| `default_speed` | `0.3` | double | Automatic movement speed |
+| `spawn_block_view_distance` | `8` | int | Search distance for spawn candidates |
+| `spawn_block_view_half_width` | `2` | int | Half-width used when scanning spawn candidates |
 
-- セグメントの経験値設定
+## Commands
 
-## コマンド
-### コンフィグ設定の変更 ```/snake config set```
+### Set config
 
-|コマンドキー	|初期値	|範囲・型	|説明|
-|------|------|------|------|
-|spread|	false	|Boolean	|プレイヤーのリスポーン位置を分散させるかどうか|
-|spread_pos|	0 0	|double, double	|分散リスポーンの中心座標（X, Z）|
-|spread_Range	|50	|0.1 ～ 10000.0 (double)	|分散の範囲（正方形領域の一辺）|
-|spread_minimum_distance|	5|	0.1 ～ 100.0 (double)|	他プレイヤーと最低限離す距離|
-|segment_experience	|10	|0 以上の整数	|セグメントが落とす経験値量|
-|default_is_snake	|false|	Boolean	|初期状態でヘビモードかどうか|
-|default_head_size|	1	|0.001 ～ 100 (double)	|初期ヘビ頭サイズ|
-|default_body_segment_size|1|	0.001 ～ 100 (double)	|初期ボディセグメントサイズ|
-|default_damage	|1000|	0.0 ～ Float.MAX (double)|	初期ダメージ量|
-|default_speed	|0.3|	0.0 ～ 1.5 (double)|	初期自動移動速度|
-|spawn_block_view_distance	|8	|0 ～ 128 (int)	|プレイヤー視線方向にスポーン制限をかける最大距離|
-|spawn_block_view_half_width	|2|0 ～ 64 (int)	|視線方向の左右にかけるスポーン制限幅（半分の長さ）|
+```mcfunction
+/snake config set <key> <value>
+```
 
+### Get config
 
-### コンフィグ設定の確認 ```/snake config get <key>```
+```mcfunction
+/snake config get <key>
+```
 
-### プレイヤー設定の変更
-```/snake <targets> <dataparameter_key> <value>```
+### Set player parameters
 
-対象プレイヤーに対して、ヘビ状態やパラメータ（サイズ・速度・ダメージなど）を直接設定できます。
+```mcfunction
+/snake <targets> <dataparameter_key> <value>
+```
 
-- targets: 対象となるプレイヤー（例: @s, @a, @p, またはプレイヤー名）。
-
-- dataparameter_key: 変更する属性のキー。以下から選択：
-
-  - isSnake: true または false でヘビモードのON/OFFを切り替える。
-  
-  - headSize: ヘビの頭のサイズ（float, 範囲: 0.1 ～ 10.0）。
-  
-  - bodySegmentSize: 各ボディセグメントのサイズ（float, 範囲: 0.1 ～ 10.0）。
-  
-  - damage: セグメントが与えるダメージ（float, 範囲: 0.0 以上）。
-  
-  - speed: 自動移動の速度（float, 範囲: 0.0 ～ 1.5）。
+- `targets`: selectors such as `@s`, `@p`, and `@a`
+- `dataparameter_key`: available keys
+  - `isSnake`
+  - `headSize`
+  - `bodySegmentSize`
+  - `damage`
+  - `speed`
 
 ![image](https://github.com/user-attachments/assets/811860e8-cffe-4b3f-b020-d5b2beb733ed)
-
