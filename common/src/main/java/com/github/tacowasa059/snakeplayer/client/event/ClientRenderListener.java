@@ -41,7 +41,7 @@ public final class ClientRenderListener {
             overlay = OverlayTexture.pack(OverlayTexture.u(partialTicks), OverlayTexture.v(true));
         }
 
-        ResourceLocation location = player.getSkinTextureLocation();
+        ResourceLocation location = player.getSkin().texture();
         float headRadius = playerData.snakePlayer$getHeadSize() / 2;
         poseStack.pushPose();
         poseStack.translate(0, headRadius, 0);

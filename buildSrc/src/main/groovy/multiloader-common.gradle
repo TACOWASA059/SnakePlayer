@@ -35,25 +35,18 @@ repositories {
         }
         filter { includeGroupAndSubgroups('org.spongepowered') }
     }
-    exclusiveContent {
-        forRepositories(
-                maven {
-                    name = 'ParchmentMC'
-                    url = 'https://maven.parchmentmc.org/'
-                },
-                maven {
-                    name = "NeoForge"
-                    url = 'https://maven.neoforged.net/releases'
-                }
-        )
-        filter { includeGroup('org.parchmentmc.data') }
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
     }
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:24.1.0'
 }
 
 ['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
     configurations."$variant".outgoing {
-        capability("$group:${project.name}:$version")
-        capability("$group:${base.archivesName.get()}:$version")
         capability("$group:$mod_id-${project.name}:$version")
         capability("$group:$mod_id:$version")
     }
@@ -91,6 +84,9 @@ processResources {
             'version'                   : version,
             'group'                     : project.group,
             'minecraft_version'         : minecraft_version,
+            'forge_version'             : forge_version,
+            'forge_loader_version_range': forge_loader_version_range,
+            'forge_version_range'       : forge_version_range,
             'minecraft_version_range'   : minecraft_version_range,
             'fabric_version'            : fabric_version,
             'fabric_loader_version'     : fabric_loader_version,
@@ -99,23 +95,14 @@ processResources {
             'mod_id'                    : mod_id,
             'license'                   : license,
             'description'               : project.description,
-            'forge_version'             : forge_version,
-            'forge_version_range'       : forge_version_range,
-            'forge_loader_version_range': forge_loader_version_range,
+            'neoforge_version'          : neoforge_version,
+            'neoforge_loader_version_range': neoforge_loader_version_range,
             'credits'                   : credits,
             'java_version'              : java_version
     ]
 
-    var jsonExpandProps = expandProps.collectEntries {
-        key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
-    }
-
-    filesMatching(['META-INF/mods.toml']) {
+    filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', '*.mixins.json']) {
         expand expandProps
-    }
-
-    filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json']) {
-        expand jsonExpandProps
     }
 
     inputs.properties(expandProps)

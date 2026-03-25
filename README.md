@@ -1,6 +1,6 @@
 # Snake Player MOD
 
-- Minecraft 1.20.1
+- Minecraft 1.20.1/1.20.4
 - Forge / Fabric
 
 
