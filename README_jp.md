@@ -1,5 +1,5 @@
 # Snake Player MOD
-- Forge/Fabric 1.20.1
+- Forge/Fabric 1.20.1/1.20.4
 
 ![image](https://github.com/user-attachments/assets/cc4da5a4-3b42-460c-a41b-5a5f1f0b3c25)
 

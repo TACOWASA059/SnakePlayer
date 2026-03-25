@@ -38,7 +38,7 @@ jobs:
       - name: Build mod jar
         run: |
           chmod +x gradlew
-          ./gradlew :forge:build :fabric:build
+          ./gradlew :forge:build :fabric:build :neoforge:build
 
       - name: Create release if missing
         env:
@@ -56,5 +56,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mapfile -t assets < <(find forge/build/libs fabric/build/libs -maxdepth 1 -type f -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar")
+          mapfile -t assets < <(find forge/build/libs fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar")
           gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
