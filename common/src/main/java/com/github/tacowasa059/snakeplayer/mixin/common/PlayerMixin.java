@@ -79,7 +79,7 @@ public abstract class PlayerMixin implements IPlayerData {
     }
 
     // 霑ｽ蜉繝・・繧ｿ繧貞酔譛溷ｯｾ雎｡縺ｨ縺励※逋ｻ骭ｲ縺吶ｋ縲・
-    @Inject(method="defineSynchedData",at=@At("TAIL"))
+    @Inject(method="defineSynchedData(Lnet/minecraft/network/syncher/SynchedEntityData$Builder;)V",at=@At("TAIL"))
     void defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci){
         builder.define(IS_Snake, Config.DEFAULT_IS_SNAKE.get());
         builder.define(HEAD_SIZE, (float) Config.DEFAULT_HEAD_SIZE.get());

@@ -35,14 +35,14 @@ public abstract class CameraMixin {
     @Shadow
     private float eyeHeightOld;
     @Shadow
-    protected abstract double getMaxZoom(double p_90567_);
+    protected abstract float getMaxZoom(float p_90567_);
     @Shadow
     protected abstract void setPosition(double p_90585_, double p_90586_, double p_90587_);
     @Shadow
     protected abstract void setRotation(float p_90573_, float p_90574_);
 
     @Shadow
-    protected abstract void move(double p_90569_, double p_90570_, double p_90571_);
+    protected abstract void move(float p_90569_, float p_90570_, float p_90571_);
 
     @Inject(method = "setup",at=@At("HEAD"),cancellable = true)
     public void setup(BlockGetter blockGetter, Entity entity, boolean detached_, boolean inv, float partialTicks, CallbackInfo ci) {
@@ -71,11 +71,11 @@ public abstract class CameraMixin {
                 this.setRotation(this.yRot + 180.0F, -this.xRot);
             }
 
-            this.move(-this.getMaxZoom(8.0D * playerData.snakePlayer$getHeadSize()), 0.0D, 0.0D);
+            this.move(-this.getMaxZoom(8.0F * playerData.snakePlayer$getHeadSize()), 0.0F, 0.0F);
         } else if (entity instanceof LivingEntity && ((LivingEntity)entity).isSleeping()) {
             Direction direction = ((LivingEntity)entity).getBedOrientation();
             this.setRotation(direction != null ? direction.toYRot() - 180.0F : 0.0F, 0.0F);
-            this.move(0.0D, 0.3D, 0.0D);
+            this.move(0.0F, 0.3F, 0.0F);
         }
 
         ci.cancel();

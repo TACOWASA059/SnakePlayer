@@ -161,33 +161,30 @@ public class SphereRenderer {
         }
     }
     private static void addSideSphereQuads(VertexConsumer vvertexConsumer, PoseStack.Pose pose, float x, float z, float[] pos_list, float[]uv_list, int packedLight, boolean lightmap2, int overlay) {
-        if(lightmap2){
-            vvertexConsumer.vertex(pose, pos_list[0]+x, pos_list[1]+ (float) 0.0, pos_list[2]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[0],uv_list[1]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[0],pos_list[1],pos_list[2]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[3]+x, pos_list[4]+ (float) 0.0, pos_list[5]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[2],uv_list[3]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[3], pos_list[4], pos_list[5]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[9]+x, pos_list[10]+ (float) 0.0, pos_list[11]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[6],uv_list[7]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[9], pos_list[10], pos_list[11]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[6]+x, pos_list[7]+ (float) 0.0, pos_list[8]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[4],uv_list[5]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[6], pos_list[7], pos_list[8]).endVertex();
-        }else{
-            vvertexConsumer.vertex(pose, pos_list[0]+x, pos_list[1]+ (float) 0.0, pos_list[2]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[0],uv_list[1]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[0],pos_list[1],pos_list[2]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[3]+x, pos_list[4]+ (float) 0.0, pos_list[5]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[2],uv_list[3]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[3], pos_list[4], pos_list[5]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[9]+x, pos_list[10]+ (float) 0.0, pos_list[11]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[6],uv_list[7]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[9], pos_list[10], pos_list[11]).endVertex();
-            vvertexConsumer.vertex(pose, pos_list[6]+x, pos_list[7]+ (float) 0.0, pos_list[8]+z)
-                    .color(1.0f, 1.0f, 1.0f, 1.0f)
-                    .uv(uv_list[4],uv_list[5]).overlayCoords(overlay).uv2(packedLight).normal(pose, pos_list[6], pos_list[7], pos_list[8]).endVertex();
-        }
+        vvertexConsumer.addVertex(pose, pos_list[0] + x, pos_list[1], pos_list[2] + z)
+                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
+                .setUv(uv_list[0], uv_list[1])
+                .setOverlay(overlay)
+                .setLight(packedLight)
+                .setNormal(pose, pos_list[0], pos_list[1], pos_list[2]);
+        vvertexConsumer.addVertex(pose, pos_list[3] + x, pos_list[4], pos_list[5] + z)
+                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
+                .setUv(uv_list[2], uv_list[3])
+                .setOverlay(overlay)
+                .setLight(packedLight)
+                .setNormal(pose, pos_list[3], pos_list[4], pos_list[5]);
+        vvertexConsumer.addVertex(pose, pos_list[9] + x, pos_list[10], pos_list[11] + z)
+                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
+                .setUv(uv_list[6], uv_list[7])
+                .setOverlay(overlay)
+                .setLight(packedLight)
+                .setNormal(pose, pos_list[9], pos_list[10], pos_list[11]);
+        vvertexConsumer.addVertex(pose, pos_list[6] + x, pos_list[7], pos_list[8] + z)
+                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
+                .setUv(uv_list[4], uv_list[5])
+                .setOverlay(overlay)
+                .setLight(packedLight)
+                .setNormal(pose, pos_list[6], pos_list[7], pos_list[8]);
     }
     private static float getSquareZ(float x1, float z1, float cube_size) {
         return (float) (cube_size * (0.5 * Math.sqrt(2 - x1 * x1 + z1 * z1 + 2 * Math.sqrt(2.0) * z1) - 0.5 * Math.sqrt(2 - x1 * x1 + z1 * z1 - 2 * Math.sqrt(2.0) * z1)));

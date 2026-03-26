@@ -94,37 +94,33 @@ public class HexagonalPrismRenderer {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = poseStack.last().pose();
 
-        vertexConsumer.vertex(matrix, x1, y1, z1)
-                .color(255, 255, 255, 255)
-                .uv(u1, v1)
-                .overlayCoords(overlay)
-                .uv2(lightmap)
-                .normal(pose, 0, 1, 0)
-                .endVertex();
+        vertexConsumer.addVertex(matrix, x1, y1, z1)
+                .setColor(255, 255, 255, 255)
+                .setUv(u1, v1)
+                .setOverlay(overlay)
+                .setLight(lightmap)
+                .setNormal(pose, 0, 1, 0);
 
-        vertexConsumer.vertex(matrix, x2, y2, z2)
-                .color(255, 255, 255, 255)
-                .uv(u2, v2)
-                .overlayCoords(overlay)
-                .uv2(lightmap)
-                .normal(pose, 0, 1, 0)
-                .endVertex();
+        vertexConsumer.addVertex(matrix, x2, y2, z2)
+                .setColor(255, 255, 255, 255)
+                .setUv(u2, v2)
+                .setOverlay(overlay)
+                .setLight(lightmap)
+                .setNormal(pose, 0, 1, 0);
 
-        vertexConsumer.vertex(matrix, x3, y3, z3)
-                .color(255, 255, 255, 255)
-                .uv(u3, v3)
-                .overlayCoords(overlay)
-                .uv2(lightmap)
-                .normal(pose, 0, 1, 0)
-                .endVertex();
+        vertexConsumer.addVertex(matrix, x3, y3, z3)
+                .setColor(255, 255, 255, 255)
+                .setUv(u3, v3)
+                .setOverlay(overlay)
+                .setLight(lightmap)
+                .setNormal(pose, 0, 1, 0);
 
-        vertexConsumer.vertex(matrix, x4, y4, z4)
-                .color(255, 255, 255, 255)
-                .uv(u4,v4)
-                .overlayCoords(overlay)
-                .uv2(lightmap)
-                .normal(pose, 0, 1, 0)
-                .endVertex();
+        vertexConsumer.addVertex(matrix, x4, y4, z4)
+                .setColor(255, 255, 255, 255)
+                .setUv(u4, v4)
+                .setOverlay(overlay)
+                .setLight(lightmap)
+                .setNormal(pose, 0, 1, 0);
     }
 
     private static void alignPoseStack(PoseStack poseStack, Vec3 base, Vec3 target) {

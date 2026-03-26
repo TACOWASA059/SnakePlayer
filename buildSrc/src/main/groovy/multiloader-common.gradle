@@ -13,19 +13,9 @@ java {
     withJavadocJar()
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-tasks.withType(Javadoc).configureEach {
-    options.encoding = 'UTF-8'
-    options.charSet = 'UTF-8'
-    options.docEncoding = 'UTF-8'
-}
-
-
 repositories {
     mavenCentral()
+    // https://docs.gradle.org/current/userguide/declaring_repositories.html#declaring_content_exclusively_found_in_one_repository
     exclusiveContent {
         forRepository {
             maven {
@@ -35,18 +25,30 @@ repositories {
         }
         filter { includeGroupAndSubgroups('org.spongepowered') }
     }
+    exclusiveContent {
+        forRepositories(
+                maven {
+                    name = 'ParchmentMC'
+                    url = 'https://maven.parchmentmc.org/'
+                },
+                maven {
+                    name = "NeoForge"
+                    url = 'https://maven.neoforged.net/releases'
+                }
+        )
+        filter { includeGroup('org.parchmentmc.data') }
+    }
     maven {
         name = 'BlameJared'
         url = 'https://maven.blamejared.com'
     }
 }
 
-dependencies {
-    implementation 'org.jetbrains:annotations:24.1.0'
-}
-
+// Declare capabilities on the outgoing configurations.
+// Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring_additional_capabilities_for_a_local_component
 ['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
     configurations."$variant".outgoing {
+        capability("$group:${base.archivesName.get()}:$version")
         capability("$group:$mod_id-${project.name}:$version")
         capability("$group:$mod_id:$version")
     }
@@ -81,30 +83,30 @@ jar {
 
 processResources {
     var expandProps = [
-            'version'                   : version,
-            'group'                     : project.group,
-            'minecraft_version'         : minecraft_version,
-            'forge_version'             : forge_version,
-            'forge_loader_version_range': forge_loader_version_range,
-            'forge_version_range'       : forge_version_range,
-            'minecraft_version_range'   : minecraft_version_range,
-            'fabric_version'            : fabric_version,
-            'fabric_loader_version'     : fabric_loader_version,
-            'mod_name'                  : mod_name,
-            'mod_author'                : mod_author,
-            'mod_id'                    : mod_id,
-            'license'                   : license,
-            'description'               : project.description,
-            'neoforge_version'          : neoforge_version,
+            'version'                      : version,
+            'group'                        : project.group,
+            'minecraft_version'            : minecraft_version,
+            'minecraft_version_range'      : minecraft_version_range,
+            'fabric_version'               : fabric_version,
+            'fabric_loader_version'        : fabric_loader_version,
+            'mod_name'                     : mod_name,
+            'mod_author'                   : mod_author,
+            'mod_id'                       : mod_id,
+            'license'                      : license,
+            'description'                  : project.description,
+            'neoforge_version'             : neoforge_version,
+            'neoforge_version_range'       : neoforge_version_range,
             'neoforge_loader_version_range': neoforge_loader_version_range,
-            'credits'                   : credits,
-            'java_version'              : java_version
+            'forge_version'                : forge_version,
+            'forge_loader_version_range'   : forge_loader_version_range,
+            'forge_version_range'          : forge_version_range,
+            'credits'                      : credits,
+            'java_version'                 : java_version
     ]
 
     filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {
         expand expandProps
     }
-
     inputs.properties(expandProps)
 }
 

@@ -44,6 +44,12 @@ public final class ClientRenderListenerNeoForge {
 
         MultiBufferSource bufferSource = minecraft.renderBuffers().bufferSource();
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
-        ClientRenderListener.renderFirstPerson(event.getPoseStack(), bufferSource, player, cameraPos, event.getPartialTick());
+        ClientRenderListener.renderFirstPerson(
+                event.getPoseStack(),
+                bufferSource,
+                player,
+                cameraPos,
+                event.getPartialTick().getGameTimeDeltaPartialTick(false)
+        );
     }
 }

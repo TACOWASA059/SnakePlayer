@@ -2,8 +2,6 @@ package com.github.tacowasa059.snakeplayer.common.entity;
 
 import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
@@ -31,16 +29,6 @@ public final class ForgePlayerPart extends PartEntity<Player> implements PlayerP
 
     @Override
     protected void addAdditionalSaveData(CompoundTag compoundTag) {
-    }
-
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void refreshDimensions() {
-        super.refreshDimensions();
     }
 
     @Override

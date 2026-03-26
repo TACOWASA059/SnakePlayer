@@ -24,7 +24,13 @@ public final class SnakePlayerFabricClient implements ClientModInitializer {
 
             MultiBufferSource.BufferSource consumers = minecraft.renderBuffers().bufferSource();
             Vec3 cameraPos = context.camera().getPosition();
-            ClientRenderListener.renderFirstPerson(context.matrixStack(), consumers, player, cameraPos, context.tickDelta());
+            ClientRenderListener.renderFirstPerson(
+                    context.matrixStack(),
+                    consumers,
+                    player,
+                    cameraPos,
+                    context.tickCounter().getGameTimeDeltaPartialTick(false)
+            );
             consumers.endBatch();
         });
     }
