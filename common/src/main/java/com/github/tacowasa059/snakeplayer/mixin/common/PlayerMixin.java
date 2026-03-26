@@ -26,7 +26,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,15 +80,14 @@ public abstract class PlayerMixin implements IPlayerData {
 
     // 霑ｽ蜉繝・・繧ｿ繧貞酔譛溷ｯｾ雎｡縺ｨ縺励※逋ｻ骭ｲ縺吶ｋ縲・
     @Inject(method="defineSynchedData",at=@At("TAIL"))
-    void defineSynchedData(CallbackInfo ci){
-        Player player = (Player) (Object)this;
-        player.getEntityData().define(IS_Snake, Config.DEFAULT_IS_SNAKE.get());
-        player.getEntityData().define(HEAD_SIZE, (float) Config.DEFAULT_HEAD_SIZE.get());
-        player.getEntityData().define(BODY_SEGMENT_SIZE, (float) Config.DEFAULT_BODY_SEGMENT_SIZE.get());
-        player.getEntityData().define(SNAKE_DAMAGE, (float) Config.DEFAULT_DAMAGE.get());
-        player.getEntityData().define(SNAKE_SPEED, (float) Config.DEFAULT_SPEED.get());
-        player.getEntityData().define(SNAKE_EXPERIENCE, 0);
-        player.getEntityData().define(PART_POSITIONS, new ArrayList<>());
+    void defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci){
+        builder.define(IS_Snake, Config.DEFAULT_IS_SNAKE.get());
+        builder.define(HEAD_SIZE, (float) Config.DEFAULT_HEAD_SIZE.get());
+        builder.define(BODY_SEGMENT_SIZE, (float) Config.DEFAULT_BODY_SEGMENT_SIZE.get());
+        builder.define(SNAKE_DAMAGE, (float) Config.DEFAULT_DAMAGE.get());
+        builder.define(SNAKE_SPEED, (float) Config.DEFAULT_SPEED.get());
+        builder.define(SNAKE_EXPERIENCE, 0);
+        builder.define(PART_POSITIONS, new ArrayList<>());
     }
 
     // 豈・tick 縺斐→縺ｫ髟ｷ縺墓峩譁ｰ縲∝ｺｧ讓吝酔譛溘∝ｽ薙◆繧雁愛螳壽峩譁ｰ繧定｡後≧縲・
@@ -301,8 +299,8 @@ public abstract class PlayerMixin implements IPlayerData {
                 float width = (float) player.getBoundingBox().getXsize();
                 float height = (float) player.getBoundingBox().getYsize();
                 EntityDimensions entityDimensions = player.getDimensions(player.getPose());
-                if(Math.abs(entityDimensions.width - width) > (float) 0.05 ||
-                        Math.abs(entityDimensions.height - height) > (float) 0.05){
+                if(Math.abs(entityDimensions.width() - width) > (float) 0.05 ||
+                        Math.abs(entityDimensions.height() - height) > (float) 0.05){
                     player.refreshDimensions();
                 }
             }
@@ -323,21 +321,6 @@ public abstract class PlayerMixin implements IPlayerData {
     @Override
     public List<PlayerPart> snakePlayer$getPlayerParts(){
         return snakePlayer$subEntities;
-    }
-    @Inject(method="getDimensions",at=@At("HEAD"),cancellable = true)
-    public void getDimensions(Pose p_36166_, CallbackInfoReturnable<EntityDimensions> cir) {
-        if(snakePlayer$getIsSnake()) {
-            EntityDimensions entityDimensions = EntityDimensions.scalable(snakePlayer$getHeadSize(), snakePlayer$getHeadSize());
-            cir.setReturnValue(entityDimensions);
-            cir.cancel();
-        }
-    }
-    @Inject(method = "getStandingEyeHeight", at=@At("HEAD"),cancellable = true)
-    public void getStandingEyeHeight(Pose p_36259_, EntityDimensions p_36260_, CallbackInfoReturnable<Float> cir){
-        if(snakePlayer$getIsSnake()){
-            cir.setReturnValue(0.75F * snakePlayer$getHeadSize());
-            cir.cancel();
-        }
     }
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag compound, CallbackInfo ci) {

@@ -33,7 +33,9 @@ public class GridManager {
         n = (int) (L / r);
         grid = Collections.synchronizedList(new ArrayList<>(Collections.nCopies(n * n, false)));
         for(Player player : server.overworld().getPlayers(player -> !player.isSpectator())){
-            IPlayerData playerData = (IPlayerData) player;
+            if (!(player instanceof IPlayerData playerData)) {
+                continue;
+            }
 
             updateGrid(player);
             for(PlayerPart playerPart : playerData.snakePlayer$getPlayerParts()){

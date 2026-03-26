@@ -6,6 +6,7 @@
   "refmap": "snakeplayer.refmap.json",
   "mixins": [
     "common.EntityMixin",
+    "common.LivingEntityMixin",
     "common.PlayerMixin",
     "common.ServerPlayerMixin"
   ],

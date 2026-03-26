@@ -1,7 +1,7 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -49,11 +49,8 @@ public final class ClientRenderListenerForge {
 
         MultiBufferSource bufferSource = minecraft.renderBuffers().bufferSource();
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
-        RenderSystem.getModelViewStack().popPose();
-        RenderSystem.applyModelViewMatrix();
-        ClientRenderListener.renderFirstPerson(event.getPoseStack(), bufferSource, player, cameraPos, event.getPartialTick());
-        RenderSystem.getModelViewStack().pushPose();
-        RenderSystem.getModelViewStack().mulPoseMatrix(event.getPoseStack().last().pose());
-        RenderSystem.applyModelViewMatrix();
+        PoseStack poseStack = new PoseStack();
+        poseStack.mulPose(event.getPoseStack());
+        ClientRenderListener.renderFirstPerson(poseStack, bufferSource, player, cameraPos, event.getPartialTick());
     }
 }

@@ -20,8 +20,9 @@ public final class PlayerSpawnEventListener {
     }
 
     public static void onPlayerClone(Player originalPlayer, Player newPlayer) {
-        IPlayerData originalPlayerData = (IPlayerData) originalPlayer;
-        IPlayerData newPlayerData = (IPlayerData) newPlayer;
+        if (!(originalPlayer instanceof IPlayerData originalPlayerData) || !(newPlayer instanceof IPlayerData newPlayerData)) {
+            return;
+        }
         newPlayerData.snakePlayer$setBodySegmentSize(originalPlayerData.snakePlayer$getBodySegmentSize());
         newPlayerData.snakePlayer$setSnakeDamage(originalPlayerData.snakePlayer$getSnakeDamage());
         newPlayerData.snakePlayer$setHeadSize(originalPlayerData.snakePlayer$getHeadSize());
@@ -72,7 +73,9 @@ public final class PlayerSpawnEventListener {
     }
 
     private static void spawnExperienceOrb(ServerLevel world, Player player, int experienceAmount) {
-        IPlayerData playerData = (IPlayerData) player;
+        if (!(player instanceof IPlayerData playerData)) {
+            return;
+        }
         List<PlayerPart> playerPartList = playerData.snakePlayer$getPlayerParts();
         for (PlayerPart playerPart : playerPartList) {
             Vec3 pos = playerPart.position();

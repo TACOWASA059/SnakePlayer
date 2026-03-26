@@ -4,6 +4,7 @@ import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,7 @@ public final class ForgePlayerPart extends PartEntity<Player> implements PlayerP
     }
 
     @Override
-    protected void defineSynchedData() {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override

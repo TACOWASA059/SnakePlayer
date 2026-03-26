@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public class HexagonalPrismRenderer {
@@ -92,15 +91,15 @@ public class HexagonalPrismRenderer {
     }
 
     private static void addQuad(VertexConsumer vertexConsumer, PoseStack poseStack, float x1, float y1, float z1,float u1, float v1, float x2, float y2, float z2,float u2, float v2, float x3, float y3, float z3,float u3, float v3, float x4, float y4, float z4,float u4, float v4, int lightmap, int overlay) {
+        PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = poseStack.last().pose();
-        Matrix3f normalMatrix = poseStack.last().normal();
 
         vertexConsumer.vertex(matrix, x1, y1, z1)
                 .color(255, 255, 255, 255)
                 .uv(u1, v1)
                 .overlayCoords(overlay)
                 .uv2(lightmap)
-                .normal(normalMatrix, 0, 1, 0)
+                .normal(pose, 0, 1, 0)
                 .endVertex();
 
         vertexConsumer.vertex(matrix, x2, y2, z2)
@@ -108,7 +107,7 @@ public class HexagonalPrismRenderer {
                 .uv(u2, v2)
                 .overlayCoords(overlay)
                 .uv2(lightmap)
-                .normal(normalMatrix, 0, 1, 0)
+                .normal(pose, 0, 1, 0)
                 .endVertex();
 
         vertexConsumer.vertex(matrix, x3, y3, z3)
@@ -116,7 +115,7 @@ public class HexagonalPrismRenderer {
                 .uv(u3, v3)
                 .overlayCoords(overlay)
                 .uv2(lightmap)
-                .normal(normalMatrix, 0, 1, 0)
+                .normal(pose, 0, 1, 0)
                 .endVertex();
 
         vertexConsumer.vertex(matrix, x4, y4, z4)
@@ -124,7 +123,7 @@ public class HexagonalPrismRenderer {
                 .uv(u4,v4)
                 .overlayCoords(overlay)
                 .uv2(lightmap)
-                .normal(normalMatrix, 0, 1, 0)
+                .normal(pose, 0, 1, 0)
                 .endVertex();
     }
 
