@@ -8,10 +8,10 @@ import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -86,7 +86,7 @@ public final class ClientRenderListener {
             overlay = OverlayTexture.pack(OverlayTexture.u(partialTicks), OverlayTexture.v(true));
         }
 
-        int lightmap = LevelRenderer.getLightCoords(player.level(), player.getOnPos().above());
+        int lightmap = LightCoordsUtil.getLightCoords(player.level(), player.getOnPos().above());
         float segmentRadius = playerData.snakePlayer$getBodySegmentSize() / 2;
         for (int i = 0; i < playerParts.size(); i++) {
             PlayerPart playerPart = playerParts.get(i);
