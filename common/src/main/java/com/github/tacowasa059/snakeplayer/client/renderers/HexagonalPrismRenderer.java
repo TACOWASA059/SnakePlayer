@@ -15,7 +15,7 @@ public class HexagonalPrismRenderer {
     public static void renderHexagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
         ResourceLocation location = player.getSkin().texture();
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucentCull(location));
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucent(location));
         poseStack.pushPose();
         poseStack.translate(base.x, base.y, base.z);
 

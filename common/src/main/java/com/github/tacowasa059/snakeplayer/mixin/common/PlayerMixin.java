@@ -213,8 +213,8 @@ public abstract class PlayerMixin implements IPlayerData {
                 List<Entity> entities = level.getEntities(player, boundingBox, entity -> (entity instanceof LivingEntity && entity.getId() != player.getId()));
 
                 Holder<DamageType> damageTypeHolder = level.registryAccess()
-                        .registryOrThrow(Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(DamageTypes.MOB_ATTACK);
+                        .lookupOrThrow(Registries.DAMAGE_TYPE)
+                        .getOrThrow(DamageTypes.MOB_ATTACK);
                 DamageSource damageSource = new DamageSource(damageTypeHolder, (Player)(Object)this);
 
                 for(Entity entity : entities){

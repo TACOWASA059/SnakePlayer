@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.github.tacowasa059.snakeplayer.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_21",
   "refmap": "${mod_id}.refmap.json",
   "mixins": [
     "common.EntityMixin",
@@ -16,7 +16,9 @@
     "client.EntityRendererMixin",
     "client.GameRendererMixin",
     "client.LocalPlayerMixin",
-    "client.MouseHandlerMixin"
+    "client.MouseHandlerMixin",
+    "client.PlayerRendererMixin",
+    "client.PlayerRenderStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

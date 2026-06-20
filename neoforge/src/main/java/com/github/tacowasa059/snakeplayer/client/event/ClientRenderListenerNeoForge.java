@@ -1,10 +1,10 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
+import com.github.tacowasa059.snakeplayer.client.duck.ISnakeRenderState;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
@@ -21,8 +21,10 @@ public final class ClientRenderListenerNeoForge {
 
     @SubscribeEvent
     public static void onClientRender(RenderPlayerEvent.Pre event) {
-        Player player = event.getEntity();
-        if (!(player instanceof AbstractClientPlayer clientPlayer)) {
+        // 1.21.2 以降、イベントはエンティティではなくレンダーステートを渡すため、
+        // extractRenderState で退避した生きているプレイヤー参照を取り出す。
+        AbstractClientPlayer clientPlayer = ((ISnakeRenderState) event.getRenderState()).snakePlayer$getPlayer();
+        if (clientPlayer == null) {
             return;
         }
         if (ClientRenderListener.renderPlayer(clientPlayer, event.getPoseStack(), event.getMultiBufferSource(), event.getPartialTick(), event.getPackedLight())) {

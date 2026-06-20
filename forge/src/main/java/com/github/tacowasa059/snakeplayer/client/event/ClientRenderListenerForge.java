@@ -1,16 +1,11 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
 import com.github.tacowasa059.snakeplayer.SnakePlayer;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.CameraType;
+import com.github.tacowasa059.snakeplayer.client.duck.ISnakeRenderState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -26,31 +21,18 @@ public final class ClientRenderListenerForge {
 
     @SubscribeEvent
     public static void onClientRender(RenderPlayerEvent.Pre event) {
-        Player player = event.getEntity();
-        if (!(player instanceof AbstractClientPlayer clientPlayer)) {
+        // 1.21.2 以降、イベントはエンティティではなくレンダーステートを渡すため、
+        // extractRenderState で退避した生きているプレイヤー参照と partialTick を取り出す。
+        ISnakeRenderState snakeState = (ISnakeRenderState) event.getState();
+        AbstractClientPlayer clientPlayer = snakeState.snakePlayer$getPlayer();
+        if (clientPlayer == null) {
             return;
         }
-        if (ClientRenderListener.renderPlayer(clientPlayer, event.getPoseStack(), event.getMultiBufferSource(), event.getPartialTick(), event.getPackedLight())) {
+        if (ClientRenderListener.renderPlayer(clientPlayer, event.getPoseStack(), event.getMultiBufferSource(), snakeState.snakePlayer$getPartialTick(), event.getPackedLight())) {
             event.setCanceled(true);
         }
     }
 
-    @SubscribeEvent
-    public static void onFirstPerspectiveRender(RenderLevelStageEvent event) {
-        if (!event.getStage().equals(RenderLevelStageEvent.Stage.AFTER_WEATHER)) {
-            return;
-        }
-
-        Minecraft minecraft = Minecraft.getInstance();
-        AbstractClientPlayer player = minecraft.player;
-        if (player == null || minecraft.options.getCameraType() != CameraType.FIRST_PERSON || player.isSpectator()) {
-            return;
-        }
-
-        MultiBufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-        Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
-        PoseStack poseStack = new PoseStack();
-        poseStack.mulPose(event.getPoseStack());
-        ClientRenderListener.renderFirstPerson(poseStack, bufferSource, player, cameraPos, event.getPartialTick());
-    }
+    // 一人称時のボディ描画は Forge 54 で RenderLevelStageEvent が削除されたため、
+    // LevelRendererMixin（renderEntities の末尾）で行う。
 }

@@ -3,6 +3,8 @@ package com.github.tacowasa059.snakeplayer.common.entity;
 import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -36,5 +38,12 @@ public final class NeoForgePlayerPart extends PartEntity<Player> implements Play
         IPlayerData playerData = (IPlayerData) getParent();
         float size = playerData.snakePlayer$getBodySegmentSize();
         return EntityDimensions.scalable(size, size);
+    }
+
+    // 1.21.2 で Entity.hurtServer が abstract 化されたため実装する。
+    // セグメントは元々 isPickable=false で直接攻撃対象にならないため、ダメージは受けない。
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        return false;
     }
 }
