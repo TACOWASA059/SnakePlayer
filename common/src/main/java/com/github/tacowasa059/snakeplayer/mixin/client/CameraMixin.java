@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,8 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CameraMixin {
     @Shadow
     private boolean initialized;
+    // 1.21.11 で Camera.level は BlockGetter から Level へ変わった。
     @Shadow
-    private BlockGetter level;
+    private Level level;
     @Shadow
     private Entity entity;
     @Shadow
@@ -45,7 +46,7 @@ public abstract class CameraMixin {
     protected abstract void move(float p_90569_, float p_90570_, float p_90571_);
 
     @Inject(method = "setup",at=@At("HEAD"),cancellable = true)
-    public void setup(BlockGetter blockGetter, Entity entity, boolean detached_, boolean inv, float partialTicks, CallbackInfo ci) {
+    public void setup(Level blockGetter, Entity entity, boolean detached_, boolean inv, float partialTicks, CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
         if(player==null)return;
         if(!player.equals(entity))return;
