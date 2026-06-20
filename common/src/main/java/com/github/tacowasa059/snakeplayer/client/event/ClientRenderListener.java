@@ -86,7 +86,7 @@ public final class ClientRenderListener {
             overlay = OverlayTexture.pack(OverlayTexture.u(partialTicks), OverlayTexture.v(true));
         }
 
-        int lightmap = LevelRenderer.getLightColor(player.level(), player.getOnPos().above());
+        int lightmap = LevelRenderer.getLightCoords(player.level(), player.getOnPos().above());
         float segmentRadius = playerData.snakePlayer$getBodySegmentSize() / 2;
         for (int i = 0; i < playerParts.size(); i++) {
             PlayerPart playerPart = playerParts.get(i);

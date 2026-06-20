@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Vec3ListDataSerializer implements EntityDataSerializer<List<Vec3>> {
     private static final StreamCodec<RegistryFriendlyByteBuf, List<Vec3>> CODEC = StreamCodec.of(
-            (buf, value) -> buf.writeCollection(value, (b, v) -> b.writeVec3(v)),
-            buf -> buf.readList(b -> b.readVec3())
+            (buf, value) -> buf.writeCollection(value, (b, v) -> Vec3.STREAM_CODEC.encode(b, v)),
+            buf -> buf.readList(b -> Vec3.STREAM_CODEC.decode(b))
     );
 
     @Override

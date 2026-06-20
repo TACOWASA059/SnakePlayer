@@ -34,8 +34,10 @@ import java.util.List;
 @Mixin(Player.class)
 public abstract class PlayerMixin implements IPlayerData {
 
+    // 新しい Mixin (sponge-mixin 0.17.3) はインスタンスフィールドの初期化子をコンストラクタへ展開しないため、
+    // フィールドは非 final にして <init> 注入で初期化する（初期化子に頼ると null になる）。
     @Unique
-    private final List<PlayerPart> snakePlayer$subEntities = new ArrayList<>();
+    private List<PlayerPart> snakePlayer$subEntities;
     @Unique
     private static final EntityDataAccessor<Boolean> IS_Snake = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
     @Unique
@@ -80,6 +82,12 @@ public abstract class PlayerMixin implements IPlayerData {
     }
 
     // 霑ｽ蜉繝・・繧ｿ繧貞酔譛溷ｯｾ雎｡縺ｨ縺励※逋ｻ骭ｲ縺吶ｋ縲・
+    // Player コンストラクタの末尾でセグメントリストを初期化する（フィールド初期化子が展開されないため）。
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void snakePlayer$initSubEntities(CallbackInfo ci) {
+        this.snakePlayer$subEntities = new ArrayList<>();
+    }
+
     @Inject(method="defineSynchedData(Lnet/minecraft/network/syncher/SynchedEntityData$Builder;)V",at=@At("TAIL"))
     void defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci){
         builder.define(IS_Snake, Config.DEFAULT_IS_SNAKE.get());
