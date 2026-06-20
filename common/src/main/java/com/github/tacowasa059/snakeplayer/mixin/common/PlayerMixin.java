@@ -8,7 +8,6 @@ import com.github.tacowasa059.snakeplayer.common.entity.PlayerPart;
 import com.github.tacowasa059.snakeplayer.common.entity.PlayerPartFactory;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +18,8 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -110,7 +111,7 @@ public abstract class PlayerMixin implements IPlayerData {
     @Unique
     // 繧ｵ繝ｼ繝舌・蛛ｴ縺ｧ蜷・そ繧ｰ繝｡繝ｳ繝医・霑ｽ蠕謎ｽ咲ｽｮ繧呈峩譁ｰ縺吶ｋ縲・
     public void snakePlayer$updateServerPositions(Player player, float parts_size) {
-        if(!player.level().isClientSide){
+        if(!player.level().isClientSide()){
             if(snakePlayer$subEntities.size()>0){
                 snakePlayer$subEntities.get(0).setOldPosAndRot();
                 snakePlayer$subEntities.get(0).setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f));
@@ -129,7 +130,7 @@ public abstract class PlayerMixin implements IPlayerData {
 
     @Unique
     public void snakePlayer$updateClientPositions(Player player, float parts_size) {
-        if(player.level().isClientSide){
+        if(player.level().isClientSide()){
             if(snakePlayer$subEntities.size()>0){
                 snakePlayer$subEntities.get(0).setPos(snakePlayer$calculateOffsetPosition(player, (snakePlayer$getBodySegmentSize() + snakePlayer$getHeadSize())/2f));
             }
@@ -205,7 +206,7 @@ public abstract class PlayerMixin implements IPlayerData {
     // 繝懊ョ繧｣繧ｻ繧ｰ繝｡繝ｳ繝医↓隗ｦ繧後◆繧ｨ繝ｳ繝・ぅ繝・ぅ縺ｸ繝繝｡繝ｼ繧ｸ繧剃ｸ弱∴繧九・
     private void snakePlayer$SetDamage(Player player) {
         float damageAmount = snakePlayer$getSnakeDamage();
-        if((!player.level().isClientSide) && (!player.isDeadOrDying())&&(!player.isSpectator())){
+        if((!player.level().isClientSide()) && (!player.isDeadOrDying())&&(!player.isSpectator())){
             for(PlayerPart playerPart: snakePlayer$subEntities){
                 if(playerPart.isRemoved()) continue;
                 Level level = playerPart.level();
@@ -276,7 +277,7 @@ public abstract class PlayerMixin implements IPlayerData {
             double y = playerPart.getY();
             double z = playerPart.getZ();
 
-            if(!player.level().isClientSide){
+            if(!player.level().isClientSide()){
                 int experienceAmount = Config.expValue.get();
                 if(experienceAmount > 0){
                     ExperienceOrb experienceOrb = new ExperienceOrb(playerPart.level(), x, y, z, experienceAmount);
@@ -322,37 +323,27 @@ public abstract class PlayerMixin implements IPlayerData {
     public List<PlayerPart> snakePlayer$getPlayerParts(){
         return snakePlayer$subEntities;
     }
+    // 1.21.6 でエンティティの保存は CompoundTag から ValueOutput/ValueInput へ変わった。
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    public void addAdditionalSaveData(CompoundTag compound, CallbackInfo ci) {
+    public void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
         Player player = (Player)(Object)this;
-        compound.putBoolean(NBT_KEY_IS_SNAKE, snakePlayer$getIsSnake());
-        compound.putFloat(NBT_KEY_HEAD_SIZE, snakePlayer$getHeadSize());
-        compound.putFloat(NBT_KEY_BODY_SEGMENT_SIZE, snakePlayer$getBodySegmentSize());
-        compound.putFloat(NBT_KEY_DAMAGE, snakePlayer$getSnakeDamage());
-        compound.putFloat(NBT_KEY_SPEED, snakePlayer$getSnakeSpeed());
-        compound.putInt(NBT_KEY_EXP, player.getEntityData().get(SNAKE_EXPERIENCE));
+        output.putBoolean(NBT_KEY_IS_SNAKE, snakePlayer$getIsSnake());
+        output.putFloat(NBT_KEY_HEAD_SIZE, snakePlayer$getHeadSize());
+        output.putFloat(NBT_KEY_BODY_SEGMENT_SIZE, snakePlayer$getBodySegmentSize());
+        output.putFloat(NBT_KEY_DAMAGE, snakePlayer$getSnakeDamage());
+        output.putFloat(NBT_KEY_SPEED, snakePlayer$getSnakeSpeed());
+        output.putInt(NBT_KEY_EXP, player.getEntityData().get(SNAKE_EXPERIENCE));
     }
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    public void readAdditionalSaveData(CompoundTag compound, CallbackInfo ci) {
-        if(compound.contains(NBT_KEY_IS_SNAKE)){
-            snakePlayer$setIsSnake(compound.getBoolean(NBT_KEY_IS_SNAKE));
-        }
-        if (compound.contains(NBT_KEY_HEAD_SIZE)) {
-            snakePlayer$setHeadSize(compound.getFloat(NBT_KEY_HEAD_SIZE));
-        }
-        if (compound.contains(NBT_KEY_BODY_SEGMENT_SIZE)) {
-            snakePlayer$setBodySegmentSize(compound.getFloat(NBT_KEY_BODY_SEGMENT_SIZE));
-        }
-        if (compound.contains(NBT_KEY_DAMAGE)) {
-            snakePlayer$setSnakeDamage(compound.getFloat(NBT_KEY_DAMAGE));
-        }
-        if (compound.contains(NBT_KEY_SPEED)) {
-            snakePlayer$setSnakeSpeed(compound.getFloat(NBT_KEY_SPEED));
-        }
-        if (compound.contains(NBT_KEY_EXP)) {
-            Player player = (Player)(Object)this;
-            player.getEntityData().set(SNAKE_EXPERIENCE, compound.getInt(NBT_KEY_EXP));
-        }
+    public void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
+        // ValueInput の boolean/float は *Or のみ。キーが無ければ現在値を既定にして実質変更しない。
+        snakePlayer$setIsSnake(input.getBooleanOr(NBT_KEY_IS_SNAKE, snakePlayer$getIsSnake()));
+        snakePlayer$setHeadSize(input.getFloatOr(NBT_KEY_HEAD_SIZE, snakePlayer$getHeadSize()));
+        snakePlayer$setBodySegmentSize(input.getFloatOr(NBT_KEY_BODY_SEGMENT_SIZE, snakePlayer$getBodySegmentSize()));
+        snakePlayer$setSnakeDamage(input.getFloatOr(NBT_KEY_DAMAGE, snakePlayer$getSnakeDamage()));
+        snakePlayer$setSnakeSpeed(input.getFloatOr(NBT_KEY_SPEED, snakePlayer$getSnakeSpeed()));
+        Player player = (Player)(Object)this;
+        input.getInt(NBT_KEY_EXP).ifPresent(value -> player.getEntityData().set(SNAKE_EXPERIENCE, value));
     }
     @Inject(method = "giveExperienceLevels",at=@At("TAIL"))
     public void giveExperience(int p_36276_, CallbackInfo ci){

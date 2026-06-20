@@ -10,13 +10,13 @@ import com.github.tacowasa059.snakeplayer.common.event.PlayerSpawnEventListenerN
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(SnakePlayer.MODID)
 public final class SnakePlayerNeoForge {
-    public SnakePlayerNeoForge(IEventBus modEventBus) {
+    // NeoForge は @Mod コンストラクタへ Dist を注入できるため、FMLEnvironment.dist の代わりに使う。
+    public SnakePlayerNeoForge(IEventBus modEventBus, Dist dist) {
         PlayerPartFactory.setFactory(NeoForgePlayerPart::new);
         SnakePlayer.init(FMLPaths.CONFIGDIR.get());
         NeoForgeModDataSerializers.register(modEventBus);
@@ -24,7 +24,7 @@ public final class SnakePlayerNeoForge {
         NeoForge.EVENT_BUS.register(new PlayerSpawnEventListenerNeoForge());
         NeoForge.EVENT_BUS.register(new ModCommandsNeoForge());
 
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.register(ClientRenderListenerNeoForge.class);
             NeoForge.EVENT_BUS.register(AutoMoveHandlerNeoForge.class);
         }

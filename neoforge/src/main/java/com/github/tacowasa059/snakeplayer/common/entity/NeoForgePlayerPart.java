@@ -1,13 +1,14 @@
 package com.github.tacowasa059.snakeplayer.common.entity;
 
 import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.entity.PartEntity;
 
 public final class NeoForgePlayerPart extends PartEntity<Player> implements PlayerPart {
@@ -26,11 +27,11 @@ public final class NeoForgePlayerPart extends PartEntity<Player> implements Play
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(ValueInput input) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(ValueOutput output) {
     }
 
     @Override

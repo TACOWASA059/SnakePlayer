@@ -3,23 +3,22 @@ package com.github.tacowasa059.snakeplayer.client.renderers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 public class SphereRenderer {
-    public static void drawTexturedSphere(PoseStack poseStack, MultiBufferSource buffer, ResourceLocation texture, float radius, int segments, float x, float z, int packedLight, boolean lightmap2, int overlay) {
+    public static void drawTexturedSphere(PoseStack poseStack, SnakeRenderSink sink, Identifier texture, float radius, int segments, float x, float z, int packedLight, boolean lightmap2, int overlay) {
         poseStack.mulPose(Axis.YP.rotationDegrees(45));
-        PoseStack.Pose pose = poseStack.last();
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(texture));
-        addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F, false,packedLight,lightmap2,overlay);
-        addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.5F, false,packedLight,lightmap2,overlay);
+        sink.submit(poseStack, RenderTypes.entityTranslucent(texture), (pose, vertexConsumer) -> {
+            addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F, false,packedLight,lightmap2,overlay);
+            addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.5F, false,packedLight,lightmap2,overlay);
 
-        addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F+0.125F, true,packedLight,lightmap2,overlay);
-        addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.125F+0.5F, true,packedLight,lightmap2,overlay);
-        addSideSphere(radius, segments, x, z, vertexConsumer,pose,false,packedLight,lightmap2,overlay);
-        addSideSphere(radius*1.01F, segments, x, z, vertexConsumer,pose,true,packedLight,lightmap2,overlay);
+            addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F+0.125F, true,packedLight,lightmap2,overlay);
+            addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.125F+0.5F, true,packedLight,lightmap2,overlay);
+            addSideSphere(radius, segments, x, z, vertexConsumer,pose,false,packedLight,lightmap2,overlay);
+            addSideSphere(radius*1.01F, segments, x, z, vertexConsumer,pose,true,packedLight,lightmap2,overlay);
+        });
 
         poseStack.mulPose(Axis.YP.rotationDegrees(-45));
     }

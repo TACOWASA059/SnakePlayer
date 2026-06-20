@@ -6,9 +6,7 @@
   "mixins": [
     "common.ForgePlayerMultipartMixin"
   ],
-  "client": [
-    "client.LevelRendererMixin"
-  ],
+  "client": [],
   "server": [],
   "injectors": {
     "defaultRequire": 1

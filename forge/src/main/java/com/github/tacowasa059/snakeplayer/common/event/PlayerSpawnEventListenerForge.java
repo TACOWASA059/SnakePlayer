@@ -3,7 +3,7 @@ package com.github.tacowasa059.snakeplayer.common.event;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 
 public final class PlayerSpawnEventListenerForge {
     @SubscribeEvent
@@ -27,8 +27,8 @@ public final class PlayerSpawnEventListenerForge {
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        PlayerSpawnEventListener.onServerTick(event.getServer());
+    public void onServerTick(TickEvent.ServerTickEvent.Post event) {
+        PlayerSpawnEventListener.onServerTick(event.server());
     }
 
     @SubscribeEvent

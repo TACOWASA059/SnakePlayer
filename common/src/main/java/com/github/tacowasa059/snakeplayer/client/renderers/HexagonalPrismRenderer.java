@@ -4,32 +4,30 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 public class HexagonalPrismRenderer {
 
-    public static void renderHexagonalPrism(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
-        ResourceLocation location = player.getSkin().texture();
+    public static void renderHexagonalPrism(AbstractClientPlayer player, PoseStack poseStack, SnakeRenderSink sink, float radius, Vec3 base, Vec3 target, int lightmap, int overlay) {
+        Identifier location = player.getSkin().body().texturePath();
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucent(location));
         poseStack.pushPose();
         poseStack.translate(base.x, base.y, base.z);
 
         alignPoseStack(poseStack, base, target);
 
-
-        renderCylinder(poseStack, lightmap, vertexConsumer, radius, false, 1f, overlay);
-        renderCylinder(poseStack, lightmap, vertexConsumer, radius, true, 1.05f, overlay);
-
+        sink.submit(poseStack, RenderTypes.entityTranslucent(location), (pose, vertexConsumer) -> {
+            renderCylinder(pose, lightmap, vertexConsumer, radius, false, 1f, overlay);
+            renderCylinder(pose, lightmap, vertexConsumer, radius, true, 1.05f, overlay);
+        });
 
         poseStack.popPose();
     }
 
-    private static void renderCylinder(PoseStack poseStack, int lightmap, VertexConsumer vertexConsumer, float radius, boolean isOuter, float mul, int overlay) {
+    private static void renderCylinder(PoseStack.Pose pose, int lightmap, VertexConsumer vertexConsumer, float radius, boolean isOuter, float mul, int overlay) {
         float side_length = radius * 2;
         int sides = 6;
         float angleIncrement = 360.0f / sides;
@@ -55,7 +53,7 @@ public class HexagonalPrismRenderer {
                 v2 += 16;
             }
 
-            addQuad(vertexConsumer, poseStack, x1Bottom, y2, z2, u2/64f, v1/64f ,x1Bottom, y1, z1,u1/64f, v1/64f, x1Top, y1, z1, u1/64f, v2/64f,x1Top, y2, z2,u2/64f, v2/64f, lightmap, overlay);
+            addQuad(vertexConsumer, pose, x1Bottom, y2, z2, u2/64f, v1/64f ,x1Bottom, y1, z1,u1/64f, v1/64f, x1Top, y1, z1, u1/64f, v2/64f,x1Top, y2, z2,u2/64f, v2/64f, lightmap, overlay);
         }
 
         int u0 = 24;
@@ -85,14 +83,13 @@ public class HexagonalPrismRenderer {
             float x1Top = side_length * mul / 2;
             float x1Bottom = - side_length * mul / 2;
 
-            addQuad(vertexConsumer, poseStack, x1Top, 0, 0,u0/64f, v0/64f, x1Top, y1, z1, u_list[i]/64f, v_list[i]/64f , x1Top, y2, z2,u_list[i+1]/64f, v_list[i+1]/64f, x1Top, y3, z3, u_list[i+2]/64f, v_list[i+2]/64f, lightmap, overlay);
-            addQuad(vertexConsumer, poseStack, x1Bottom, y1, z1, (u_list[i]+8)/64f, v_list[i]/64f ,x1Bottom, 0, 0,(u0+8)/64f, v0/64f, x1Bottom, y3, z3, (u_list[i+2]+8)/64f, v_list[i+2]/64f, x1Bottom, y2, z2,(u_list[i+1]+8)/64f, v_list[i+1]/64f, lightmap, overlay);
+            addQuad(vertexConsumer, pose, x1Top, 0, 0,u0/64f, v0/64f, x1Top, y1, z1, u_list[i]/64f, v_list[i]/64f , x1Top, y2, z2,u_list[i+1]/64f, v_list[i+1]/64f, x1Top, y3, z3, u_list[i+2]/64f, v_list[i+2]/64f, lightmap, overlay);
+            addQuad(vertexConsumer, pose, x1Bottom, y1, z1, (u_list[i]+8)/64f, v_list[i]/64f ,x1Bottom, 0, 0,(u0+8)/64f, v0/64f, x1Bottom, y3, z3, (u_list[i+2]+8)/64f, v_list[i+2]/64f, x1Bottom, y2, z2,(u_list[i+1]+8)/64f, v_list[i+1]/64f, lightmap, overlay);
         }
     }
 
-    private static void addQuad(VertexConsumer vertexConsumer, PoseStack poseStack, float x1, float y1, float z1,float u1, float v1, float x2, float y2, float z2,float u2, float v2, float x3, float y3, float z3,float u3, float v3, float x4, float y4, float z4,float u4, float v4, int lightmap, int overlay) {
-        PoseStack.Pose pose = poseStack.last();
-        Matrix4f matrix = poseStack.last().pose();
+    private static void addQuad(VertexConsumer vertexConsumer, PoseStack.Pose pose, float x1, float y1, float z1,float u1, float v1, float x2, float y2, float z2,float u2, float v2, float x3, float y3, float z3,float u3, float v3, float x4, float y4, float z4,float u4, float v4, int lightmap, int overlay) {
+        Matrix4f matrix = pose.pose();
 
         vertexConsumer.addVertex(matrix, x1, y1, z1)
                 .setColor(255, 255, 255, 255)

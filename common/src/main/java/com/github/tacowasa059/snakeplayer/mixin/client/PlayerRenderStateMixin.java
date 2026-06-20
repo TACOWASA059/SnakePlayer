@@ -2,11 +2,11 @@ package com.github.tacowasa059.snakeplayer.mixin.client;
 
 import com.github.tacowasa059.snakeplayer.client.duck.ISnakeRenderState;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(PlayerRenderState.class)
+@Mixin(AvatarRenderState.class)
 public class PlayerRenderStateMixin implements ISnakeRenderState {
     @Unique
     private AbstractClientPlayer snakePlayer$player;

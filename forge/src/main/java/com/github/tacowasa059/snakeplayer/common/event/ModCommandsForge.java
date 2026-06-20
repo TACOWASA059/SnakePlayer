@@ -1,7 +1,7 @@
 package com.github.tacowasa059.snakeplayer.common.event;
 
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 
 public final class ModCommandsForge {
     @SubscribeEvent

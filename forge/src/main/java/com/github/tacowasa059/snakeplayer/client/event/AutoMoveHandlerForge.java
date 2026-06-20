@@ -1,18 +1,12 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
-import com.github.tacowasa059.snakeplayer.SnakePlayer;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 
-@Mod.EventBusSubscriber(modid = SnakePlayer.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class AutoMoveHandlerForge {
+    // EventBus 7 / Forge 61: TickEvent は Pre/Post レコードへ分割された（Post = 旧 END フェーズ）。
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(TickEvent.ClientTickEvent.Post event) {
         AutoMoveHandler.onClientTick();
     }
 }
