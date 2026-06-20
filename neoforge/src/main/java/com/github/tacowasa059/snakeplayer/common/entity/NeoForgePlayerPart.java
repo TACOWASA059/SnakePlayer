@@ -1,12 +1,14 @@
 package com.github.tacowasa059.snakeplayer.common.entity;
 
 import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.entity.PartEntity;
 
 public final class NeoForgePlayerPart extends PartEntity<Player> implements PlayerPart {
@@ -21,25 +23,15 @@ public final class NeoForgePlayerPart extends PartEntity<Player> implements Play
     }
 
     @Override
-    protected void defineSynchedData() {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(ValueInput input) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
-    }
-
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void refreshDimensions() {
-        super.refreshDimensions();
+    protected void addAdditionalSaveData(ValueOutput output) {
     }
 
     @Override
@@ -47,5 +39,12 @@ public final class NeoForgePlayerPart extends PartEntity<Player> implements Play
         IPlayerData playerData = (IPlayerData) getParent();
         float size = playerData.snakePlayer$getBodySegmentSize();
         return EntityDimensions.scalable(size, size);
+    }
+
+    // 1.21.2 で Entity.hurtServer が abstract 化されたため実装する。
+    // セグメントは元々 isPickable=false で直接攻撃対象にならないため、ダメージは受けない。
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        return false;
     }
 }

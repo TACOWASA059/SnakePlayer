@@ -29,7 +29,7 @@ public final class ModCommands {
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> buildSnakeCommands() {
         return Commands.literal("snake")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("targets", EntityArgument.players())
                         .then(Commands.literal("isSnake")
                                 .then(Commands.argument("value", BoolArgumentType.bool())
@@ -55,7 +55,7 @@ public final class ModCommands {
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> buildConfigCommands() {
         return Commands.literal("snake")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("config")
                         .then(Commands.literal("reload")
                                 .executes(context -> {

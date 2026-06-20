@@ -33,7 +33,9 @@ public class GridManager {
         n = (int) (L / r);
         grid = Collections.synchronizedList(new ArrayList<>(Collections.nCopies(n * n, false)));
         for(Player player : server.overworld().getPlayers(player -> !player.isSpectator())){
-            IPlayerData playerData = (IPlayerData) player;
+            if (!(player instanceof IPlayerData playerData)) {
+                continue;
+            }
 
             updateGrid(player);
             for(PlayerPart playerPart : playerData.snakePlayer$getPlayerParts()){
@@ -189,7 +191,7 @@ public class GridManager {
         blockpos$mutableblockpos.move(Direction.DOWN);
 
         boolean flag2;
-        for(boolean flag1 = blockGetter.getBlockState(blockpos$mutableblockpos).isAir(); blockpos$mutableblockpos.getY() > blockGetter.getMinBuildHeight(); flag1 = flag2) {
+        for(boolean flag1 = blockGetter.getBlockState(blockpos$mutableblockpos).isAir(); blockpos$mutableblockpos.getY() > blockGetter.getMinY(); flag1 = flag2) {
             blockpos$mutableblockpos.move(Direction.DOWN);
             flag2 = blockGetter.getBlockState(blockpos$mutableblockpos).isAir();
             if (!flag2 && flag1 && flag) {

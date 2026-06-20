@@ -1,9 +1,9 @@
 package com.github.tacowasa059.snakeplayer.common.event;
 
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class PlayerSpawnEventListenerNeoForge {
     @SubscribeEvent
@@ -27,7 +27,7 @@ public final class PlayerSpawnEventListenerNeoForge {
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
+    public void onServerTick(ServerTickEvent.Post event) {
         PlayerSpawnEventListener.onServerTick(event.getServer());
     }
 

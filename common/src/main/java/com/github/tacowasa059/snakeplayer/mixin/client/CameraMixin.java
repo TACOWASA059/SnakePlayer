@@ -9,19 +9,18 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * 26.1.2 で Camera は setup(...) から update(DeltaTracker) + alignWithEntity(float) へ再構成された。
+ * スネークプレイヤーのカメラ（移動方向追従ヨー＋頭サイズ基準のズーム）を alignWithEntity で再実装する。
+ */
 @Mixin(Camera.class)
 public abstract class CameraMixin {
-    @Shadow
-    private boolean initialized;
-    @Shadow
-    private BlockGetter level;
     @Shadow
     private Entity entity;
     @Shadow
@@ -34,51 +33,57 @@ public abstract class CameraMixin {
     private float eyeHeight;
     @Shadow
     private float eyeHeightOld;
-    @Shadow
-    protected abstract double getMaxZoom(double p_90567_);
-    @Shadow
-    protected abstract void setPosition(double p_90585_, double p_90586_, double p_90587_);
-    @Shadow
-    protected abstract void setRotation(float p_90573_, float p_90574_);
 
     @Shadow
-    protected abstract void move(double p_90569_, double p_90570_, double p_90571_);
+    protected abstract float getMaxZoom(float maxZoom);
 
-    @Inject(method = "setup",at=@At("HEAD"),cancellable = true)
-    public void setup(BlockGetter blockGetter, Entity entity, boolean detached_, boolean inv, float partialTicks, CallbackInfo ci) {
+    @Shadow
+    protected abstract void setPosition(double x, double y, double z);
+
+    @Shadow
+    protected abstract void setRotation(float yRot, float xRot);
+
+    @Shadow
+    protected abstract void move(float zoom, float dy, float dx);
+
+    @Inject(method = "alignWithEntity", at = @At("HEAD"), cancellable = true)
+    private void snakePlayer$alignWithEntity(float partialTicks, CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
-        if(player==null)return;
-        if(!player.equals(entity))return;
-        IPlayerData playerData = (IPlayerData)player;
-        if(!playerData.snakePlayer$getIsSnake() || player.isSpectator()) return;
-        this.initialized = true;
-        this.level = blockGetter;
-        this.entity = entity;
-        this.detached = detached_;
-
-        if(!player.isCreative()){
-            this.setRotation(ClientPlayerUtils.getCameraViewYRot(partialTicks), entity.getViewXRot(partialTicks));
-        }else{
-            this.setRotation(entity.getViewYRot(partialTicks), entity.getViewXRot(partialTicks));
+        if (player == null || !player.equals(this.entity)) {
+            return;
+        }
+        IPlayerData playerData = (IPlayerData) player;
+        if (!playerData.snakePlayer$getIsSnake() || player.isSpectator()) {
+            return;
         }
 
-        this.setPosition(Mth.lerp(partialTicks, entity.xo, entity.getX()),
-                Mth.lerp(partialTicks, entity.yo,
-                        entity.getY()) + (double)Mth.lerp(partialTicks, this.eyeHeightOld, this.eyeHeight),
-                Mth.lerp(partialTicks, entity.zo, entity.getZ()));
-        if (detached_) {
-            if (inv) {
+        // 回転：スネーク（非クリエイティブ）は移動方向追従の独自ヨーを使う。
+        if (!player.isCreative()) {
+            this.setRotation(ClientPlayerUtils.getCameraViewYRot(partialTicks), this.entity.getViewXRot(partialTicks));
+        } else {
+            this.setRotation(this.entity.getViewYRot(partialTicks), this.entity.getViewXRot(partialTicks));
+        }
+
+        // 位置
+        this.setPosition(
+                Mth.lerp((double) partialTicks, this.entity.xo, this.entity.getX()),
+                Mth.lerp((double) partialTicks, this.entity.yo, this.entity.getY()) + Mth.lerp(partialTicks, this.eyeHeightOld, this.eyeHeight),
+                Mth.lerp((double) partialTicks, this.entity.zo, this.entity.getZ())
+        );
+
+        // 三人称ズーム（頭サイズ基準）／睡眠
+        this.detached = !Minecraft.getInstance().options.getCameraType().isFirstPerson();
+        if (this.detached) {
+            if (Minecraft.getInstance().options.getCameraType().isMirrored()) {
                 this.setRotation(this.yRot + 180.0F, -this.xRot);
             }
-
-            this.move(-this.getMaxZoom(8.0D * playerData.snakePlayer$getHeadSize()), 0.0D, 0.0D);
-        } else if (entity instanceof LivingEntity && ((LivingEntity)entity).isSleeping()) {
-            Direction direction = ((LivingEntity)entity).getBedOrientation();
-            this.setRotation(direction != null ? direction.toYRot() - 180.0F : 0.0F, 0.0F);
-            this.move(0.0D, 0.3D, 0.0D);
+            this.move(-this.getMaxZoom(8.0F * playerData.snakePlayer$getHeadSize()), 0.0F, 0.0F);
+        } else if (this.entity instanceof LivingEntity living && living.isSleeping()) {
+            Direction bedOrientation = living.getBedOrientation();
+            this.setRotation(bedOrientation != null ? bedOrientation.toYRot() - 180.0F : 0.0F, 0.0F);
+            this.move(0.0F, 0.3F, 0.0F);
         }
 
         ci.cancel();
-
     }
 }

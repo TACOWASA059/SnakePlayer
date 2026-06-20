@@ -21,7 +21,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer {
     @Shadow
     protected abstract boolean isControlledCamera();
 
-    @Inject(method = "serverAiStep", at = @At("TAIL"))
+    // 1.21.11 で LocalPlayer の入力処理は serverAiStep から applyInput() へ移動した（xxa/zza をここで設定する）。
+    @Inject(method = "applyInput", at = @At("TAIL"))
     private void disableBackwardMovement(CallbackInfo ci) {
         LocalPlayer player = (LocalPlayer) (Object)this;
         if (this.isControlledCamera()) {

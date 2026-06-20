@@ -43,7 +43,7 @@ public final class AutoMoveHandler {
             additionalSpeed *= 0.2f;
         }
 
-        Vec3 rel = rotateVec3AroundY(new Vec3(forward.x, 0, forward.z), -35 * player.input.leftImpulse * Math.PI / 180f);
+        Vec3 rel = rotateVec3AroundY(new Vec3(forward.x, 0, forward.z), -35 * player.input.getMoveVector().x * Math.PI / 180f);
         player.setDeltaMovement(currentVelocity.add(rel.scale(additionalSpeed)));
     }
 

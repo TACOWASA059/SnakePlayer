@@ -24,7 +24,9 @@ public class ServerPlayerMixin {
     @Unique
     private void snakePlayer$setExp() {
         ServerPlayer player = (ServerPlayer) (Object)this;
-        IPlayerData playerData = (IPlayerData) player;
+        if (!(player instanceof IPlayerData playerData)) {
+            return;
+        }
         playerData.snakePlayer$setSnakeExperience(player.experienceLevel);
     }
 

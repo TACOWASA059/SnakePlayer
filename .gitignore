@@ -2,6 +2,8 @@
 .idea/
 .vscode/
 build/
+jars/
+runs/
 run/
 run-data/
 src/generated/
