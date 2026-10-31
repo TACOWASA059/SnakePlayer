@@ -1,6 +1,6 @@
 package com.github.tacowasa059.snakeplayer.client.event;
 
-import com.github.tacowasa059.snakeplayer.client.renderers.HexagonalPrismRenderer;
+import com.github.tacowasa059.snakeplayer.client.renderers.ConnectedBodyRenderer;
 import com.github.tacowasa059.snakeplayer.client.renderers.SnakeRenderSink;
 import com.github.tacowasa059.snakeplayer.client.renderers.SphereRenderer;
 import com.github.tacowasa059.snakeplayer.common.Interface.IPlayerData;
@@ -47,21 +47,17 @@ public final class ClientRenderListener {
 
         Identifier location = player.getSkin().body().texturePath();
         float headRadius = playerData.snakePlayer$getHeadSize() / 2;
+        float viewYaw = player.getViewYRot(partialTicks);
+        float viewPitch = player.getViewXRot(partialTicks);
         poseStack.pushPose();
         poseStack.translate(0, headRadius, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot()));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-viewYaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(viewPitch));
         SphereRenderer.drawTexturedSphere(poseStack, sink, location, headRadius, 8, 0, 0, lightmap, true, overlay);
         poseStack.popPose();
 
         float segmentRadius = playerData.snakePlayer$getBodySegmentSize() / 2;
-        for (int i = 0; i < playerParts.size(); i++) {
-            PlayerPart playerPart = playerParts.get(i);
-            Vec3 base = playerPart.getPosition(partialTicks).subtract(playerVec).add(0, segmentRadius, 0);
-            Vec3 target = i > 0 ? playerParts.get(i - 1).getPosition(partialTicks) : player.getPosition(partialTicks);
-            target = target.subtract(playerVec).add(0, segmentRadius, 0);
-            HexagonalPrismRenderer.renderHexagonalPrism(player, poseStack, sink, segmentRadius, base, target, lightmap, overlay);
-        }
+        ConnectedBodyRenderer.renderConnectedBody(player, poseStack, sink, segmentRadius, playerParts, playerVec, partialTicks, lightmap, overlay);
 
         return true;
     }
@@ -88,12 +84,6 @@ public final class ClientRenderListener {
 
         int lightmap = LightCoordsUtil.getLightCoords(player.level(), player.getOnPos().above());
         float segmentRadius = playerData.snakePlayer$getBodySegmentSize() / 2;
-        for (int i = 0; i < playerParts.size(); i++) {
-            PlayerPart playerPart = playerParts.get(i);
-            Vec3 base = playerPart.getPosition(partialTicks).subtract(cameraPos).add(0, segmentRadius, 0);
-            Vec3 target = i > 0 ? playerParts.get(i - 1).getPosition(partialTicks) : player.getPosition(partialTicks);
-            target = target.subtract(cameraPos).add(0, segmentRadius, 0);
-            HexagonalPrismRenderer.renderHexagonalPrism(player, poseStack, sink, segmentRadius, base, target, lightmap, overlay);
-        }
+        ConnectedBodyRenderer.renderConnectedBody(player, poseStack, sink, segmentRadius, playerParts, cameraPos, partialTicks, lightmap, overlay);
     }
 }

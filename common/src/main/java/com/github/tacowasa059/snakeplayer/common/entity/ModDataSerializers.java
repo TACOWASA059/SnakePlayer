@@ -10,7 +10,7 @@ public class ModDataSerializers {
     public static final EntityDataSerializer<List<Vec3>> VEC3_LIST = new Vec3ListDataSerializer();
 
     public static void register() {
-        // EntityDataSerializer 縺ｮ逋ｻ骭ｲ
+        // EntityDataSerializer の登録
         EntityDataSerializers.registerSerializer(VEC3_LIST);
     }
 }

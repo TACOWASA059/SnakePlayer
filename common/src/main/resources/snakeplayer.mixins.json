@@ -11,6 +11,7 @@
   ],
   "client": [
     "client.CameraMixin",
+    "client.EntityHitboxDebugRendererMixin",
     "client.EntityMixin",
     "client.EntityRendererMixin",
     "client.GameRendererMixin",

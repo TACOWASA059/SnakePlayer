@@ -1,10 +1,8 @@
 package com.github.tacowasa059.snakeplayer.client.util;
 
-import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-
 
 public class ClientPlayerUtils {
 
@@ -13,9 +11,11 @@ public class ClientPlayerUtils {
     public static float CameraYRot0 = Float.MIN_VALUE;
 
     public static void SetPosIfRemote(Player player, Vec3 vec3){
-        if(player instanceof RemotePlayer){
-            player.setPos(vec3);
-        }
+        // RemotePlayer の座標はバニラの補間システム（lerpTo）に任せるため上書きしない
+    }
+
+    public static boolean isRemotePlayer(Player player) {
+        return player.level().isClientSide() && player.getClass().getSimpleName().equals("RemotePlayer");
     }
 
     public static float getCameraViewYRot(float partialTicks) {

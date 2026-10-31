@@ -8,60 +8,61 @@ import net.minecraft.resources.Identifier;
 
 public class SphereRenderer {
     public static void drawTexturedSphere(PoseStack poseStack, SnakeRenderSink sink, Identifier texture, float radius, int segments, float x, float z, int packedLight, boolean lightmap2, int overlay) {
+        poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(45));
 
         sink.submit(poseStack, RenderTypes.entityTranslucent(texture), (pose, vertexConsumer) -> {
-            addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F, false,packedLight,lightmap2,overlay);
-            addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.5F, false,packedLight,lightmap2,overlay);
+            addBottomSphere(radius, segments, x, z, vertexConsumer, pose, 0.1875F, false, packedLight, lightmap2, overlay);
+            addBottomSphere(radius * 1.01F, segments, x, z, vertexConsumer, pose, 0.1875F + 0.5F, false, packedLight, lightmap2, overlay);
 
-            addBottomSphere(radius, segments, x, z, vertexConsumer, pose,0.1875F+0.125F, true,packedLight,lightmap2,overlay);
-            addBottomSphere(radius*1.01F, segments, x, z, vertexConsumer, pose,0.1875F+0.125F+0.5F, true,packedLight,lightmap2,overlay);
-            addSideSphere(radius, segments, x, z, vertexConsumer,pose,false,packedLight,lightmap2,overlay);
-            addSideSphere(radius*1.01F, segments, x, z, vertexConsumer,pose,true,packedLight,lightmap2,overlay);
+            addBottomSphere(radius, segments, x, z, vertexConsumer, pose, 0.1875F + 0.125F, true, packedLight, lightmap2, overlay);
+            addBottomSphere(radius * 1.01F, segments, x, z, vertexConsumer, pose, 0.1875F + 0.125F + 0.5F, true, packedLight, lightmap2, overlay);
+            addSideSphere(radius, segments, x, z, vertexConsumer, pose, false, packedLight, lightmap2, overlay);
+            addSideSphere(radius * 1.01F, segments, x, z, vertexConsumer, pose, true, packedLight, lightmap2, overlay);
         });
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(-45));
+        poseStack.popPose();
     }
-    private static void addBottomSphere(float radius, int segments, float x, float z, VertexConsumer vertexConsumer, PoseStack.Pose pose, float u0, boolean isLower, int packedLight, boolean lightmap2, int overlay) {
-        float cube_size=0.0625F;//texture
-        for (int j = 0; j< Math.round(segments/4f);j++) {
-            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4f)));
-            float sin_theta= (float) Math.sin(theta);
-            float cos_theta= (float) Math.cos(theta);
 
-            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4f)));
-            float next_sin_theta= (float) Math.sin(next_theta);
-            float next_cos_theta= (float) Math.cos(next_theta);
+    private static void addBottomSphere(float radius, int segments, float x, float z, VertexConsumer vertexConsumer, PoseStack.Pose pose, float u0, boolean isLower, int packedLight, boolean lightmap2, int overlay) {
+        float cube_size = 0.0625F; // texture
+        for (int j = 0; j < Math.round(segments / 4f); j++) {
+            float theta = (float) (Math.PI * j / (4 * Math.round(segments / 4f)));
+            float sin_theta = (float) Math.sin(theta);
+            float cos_theta = (float) Math.cos(theta);
+
+            float next_theta = (float) (Math.PI * (j + 1) / (4 * Math.round(segments / 4f)));
+            float next_sin_theta = (float) Math.sin(next_theta);
+            float next_cos_theta = (float) Math.cos(next_theta);
 
             for (int i = 0; i < segments; i++) {
                 double angle = -Math.PI * 2 * i / segments;
-                double next_angle = -Math.PI * 2 * ((i + 1)) / segments;
-                if(isLower){
-                    angle=-angle;
-                    next_angle=-next_angle;
+                double next_angle = -Math.PI * 2 * (i + 1) / segments;
+                if (isLower) {
+                    angle = -angle;
+                    next_angle = -next_angle;
                 }
 
-                float dx = (float) ((radius*sin_theta * Math.cos(angle)));
-                float dz = (float) ((radius*sin_theta * Math.sin(angle)));
-                float next_i_dx = (float) ((radius*sin_theta * Math.cos(next_angle)));
-                float next_i_dz = (float) ((radius*sin_theta * Math.sin(next_angle)));
-                float next_j_dx = (float) ((radius*next_sin_theta * Math.cos(angle)));
-                float next_j_dz = (float) ((radius*next_sin_theta * Math.sin(angle)));
-                float next_ij_dx = (float) ((radius*next_sin_theta * Math.cos(next_angle)));
-                float next_ij_dz = (float) ((radius*next_sin_theta * Math.sin(next_angle)));
+                float dx = (float) (radius * sin_theta * Math.cos(angle));
+                float dz = (float) (radius * sin_theta * Math.sin(angle));
+                float next_i_dx = (float) (radius * sin_theta * Math.cos(next_angle));
+                float next_i_dz = (float) (radius * sin_theta * Math.sin(next_angle));
+                float next_j_dx = (float) (radius * next_sin_theta * Math.cos(angle));
+                float next_j_dz = (float) (radius * next_sin_theta * Math.sin(angle));
+                float next_ij_dx = (float) (radius * next_sin_theta * Math.cos(next_angle));
+                float next_ij_dz = (float) (radius * next_sin_theta * Math.sin(next_angle));
 
-                float[]pos_list;
+                float[] pos_list;
 
-                if(isLower){
-                    pos_list=new float[]{
-                            dx, - radius*cos_theta,dz,
-                            next_i_dx, - radius*cos_theta,next_i_dz,
-                            next_j_dx, - radius*next_cos_theta,next_j_dz,
-                            next_ij_dx,- radius*next_cos_theta,next_ij_dz
+                if (isLower) {
+                    pos_list = new float[]{
+                            dx, -radius * cos_theta, dz,
+                            next_i_dx, -radius * cos_theta, next_i_dz,
+                            next_j_dx, -radius * next_cos_theta, next_j_dz,
+                            next_ij_dx, -radius * next_cos_theta, next_ij_dz
                     };
-                }
-                else{
-                    pos_list=new float[]{
+                } else {
+                    pos_list = new float[]{
                             dx, radius * cos_theta, dz,
                             next_i_dx, radius * cos_theta, next_i_dz,
                             next_j_dx, radius * next_cos_theta, next_j_dz,
@@ -69,17 +70,14 @@ public class SphereRenderer {
                     };
                 }
 
-
-
-                float x1 = (float) Math.cos(angle - Math.PI / 4)*sin_theta * (float)Math.sqrt(2.0F);
-                float z1 = (float) Math.sin(angle - Math.PI / 4)*sin_theta * (float)Math.sqrt(2.0F);
-                float next_i_x1 = (float) Math.cos(next_angle - Math.PI / 4)*sin_theta * (float)Math.sqrt(2.0F);
-                float next_i_z1 = (float) Math.sin(next_angle - Math.PI / 4)*sin_theta * (float)Math.sqrt(2.0F);
-                float next_j_x1 = (float) Math.cos(angle - Math.PI / 4)*next_sin_theta * (float)Math.sqrt(2.0F);
-                float next_j_z1 = (float) Math.sin(angle - Math.PI / 4)*next_sin_theta * (float)Math.sqrt(2.0F);
-                float next_ij_x1 = (float) Math.cos(next_angle - Math.PI / 4)*next_sin_theta * (float)Math.sqrt(2.0F);
-                float next_ij_z1 = (float) Math.sin(next_angle - Math.PI / 4)*next_sin_theta * (float)Math.sqrt(2.0F);
-
+                float x1 = (float) Math.cos(angle - Math.PI / 4) * sin_theta * (float) Math.sqrt(2.0F);
+                float z1 = (float) Math.sin(angle - Math.PI / 4) * sin_theta * (float) Math.sqrt(2.0F);
+                float next_i_x1 = (float) Math.cos(next_angle - Math.PI / 4) * sin_theta * (float) Math.sqrt(2.0F);
+                float next_i_z1 = (float) Math.sin(next_angle - Math.PI / 4) * sin_theta * (float) Math.sqrt(2.0F);
+                float next_j_x1 = (float) Math.cos(angle - Math.PI / 4) * next_sin_theta * (float) Math.sqrt(2.0F);
+                float next_j_z1 = (float) Math.sin(angle - Math.PI / 4) * next_sin_theta * (float) Math.sqrt(2.0F);
+                float next_ij_x1 = (float) Math.cos(next_angle - Math.PI / 4) * next_sin_theta * (float) Math.sqrt(2.0F);
+                float next_ij_z1 = (float) Math.sin(next_angle - Math.PI / 4) * next_sin_theta * (float) Math.sqrt(2.0F);
 
                 float square_x = getSquareX(x1, z1, cube_size);
                 float square_z = getSquareZ(x1, z1, cube_size);
@@ -90,60 +88,59 @@ public class SphereRenderer {
                 float next_ij_square_x = getSquareX(next_ij_x1, next_ij_z1, cube_size);
                 float next_ij_square_z = getSquareZ(next_ij_x1, next_ij_z1, cube_size);
 
-
                 float u = u0 + square_x;
-                float v = (float) 0.0625 + square_z;
+                float v = 0.0625f + square_z;
                 float next_i_u = u0 + next_i_square_x;
-                float next_i_v = (float) 0.0625 + next_i_square_z;
+                float next_i_v = 0.0625f + next_i_square_z;
                 float next_j_u = u0 + next_j_square_x;
-                float next_j_v = (float) 0.0625 + next_j_square_z;
+                float next_j_v = 0.0625f + next_j_square_z;
                 float next_ij_u = u0 + next_ij_square_x;
-                float next_ij_v = (float) 0.0625 + next_ij_square_z;
+                float next_ij_v = 0.0625f + next_ij_square_z;
 
-                float[]uv_list=new float[]{
-                        u,v,next_i_u,next_i_v,next_j_u,next_j_v,next_ij_u,next_ij_v
+                float[] uv_list = new float[]{
+                        u, v, next_i_u, next_i_v, next_j_u, next_j_v, next_ij_u, next_ij_v
                 };
-                addSideSphereQuads(vertexConsumer, pose, x, z, pos_list,uv_list,packedLight,lightmap2,overlay);
+                addSideSphereQuads(vertexConsumer, pose, x, z, pos_list, uv_list, packedLight, lightmap2, overlay);
             }
         }
     }
 
     private static void addSideSphere(float radius, int segments, float x, float z, VertexConsumer vertexConsumer, PoseStack.Pose pose, boolean isInner, int packedLight, boolean lightmap2, int overlay) {
-        for (int j = Math.round(segments/4f); j< Math.round(3*segments/4f);j++) {
-            float theta= (float) (Math.PI*j/(4 * Math.round(segments/4f)));
-            float sin_theta= (float) Math.sin(theta);
-            float cos_theta= (float) Math.cos(theta);
+        for (int j = Math.round(segments / 4f); j < Math.round(3 * segments / 4f); j++) {
+            float theta = (float) (Math.PI * j / (4 * Math.round(segments / 4f)));
+            float sin_theta = (float) Math.sin(theta);
+            float cos_theta = (float) Math.cos(theta);
 
-            float next_theta= (float) (Math.PI*(j+1)/(4 * Math.round(segments/4f)));
-            float next_sin_theta= (float) Math.sin(next_theta);
-            float next_cos_theta= (float) Math.cos(next_theta);
+            float next_theta = (float) (Math.PI * (j + 1) / (4 * Math.round(segments / 4f)));
+            float next_sin_theta = (float) Math.sin(next_theta);
+            float next_cos_theta = (float) Math.cos(next_theta);
 
-            for (int i = 0; i < segments; i++) {//髮朱ｯ会ｽｽ・ｴ髯晢ｽｷ繝ｻ・ｳ髫ｴ繝ｻ・ｽ・ｹ髯ｷ・ｷ郢晢ｽｻ
+            for (int i = 0; i < segments; i++) {
                 double angle = -Math.PI / 2 - Math.PI * 2 * i / segments;
-                double next_angle = -Math.PI / 2 - Math.PI * 2 * ((i + 1)) / segments;
+                double next_angle = -Math.PI / 2 - Math.PI * 2 * (i + 1) / segments;
 
-                float dx = (float) ((radius * Math.cos(angle) * sin_theta));
-                float dz = (float) ((radius * Math.sin(angle) * sin_theta));
-                float next_i_dx = (float) ((radius * Math.cos(next_angle)* sin_theta));
-                float next_i_dz = (float) ((radius * Math.sin(next_angle)* sin_theta));
-                float next_j_dx = (float) ((radius * Math.cos(angle) * next_sin_theta));
-                float next_j_dz = (float) ((radius * Math.sin(angle) * next_sin_theta));
-                float next_ij_dx = (float) ((radius * Math.cos(next_angle)* next_sin_theta));
-                float next_ij_dz = (float) ((radius * Math.sin(next_angle)* next_sin_theta));
+                float dx = (float) (radius * Math.cos(angle) * sin_theta);
+                float dz = (float) (radius * Math.sin(angle) * sin_theta);
+                float next_i_dx = (float) (radius * Math.cos(next_angle) * sin_theta);
+                float next_i_dz = (float) (radius * Math.sin(next_angle) * sin_theta);
+                float next_j_dx = (float) (radius * Math.cos(angle) * next_sin_theta);
+                float next_j_dz = (float) (radius * Math.sin(angle) * next_sin_theta);
+                float next_ij_dx = (float) (radius * Math.cos(next_angle) * next_sin_theta);
+                float next_ij_dz = (float) (radius * Math.sin(next_angle) * next_sin_theta);
 
-                float[]pos_list=new float[]{
-                        dx,radius*cos_theta,dz,
-                        next_i_dx,radius*cos_theta,next_i_dz,
-                        next_j_dx,radius*next_cos_theta,next_j_dz,
-                        next_ij_dx,radius*next_cos_theta,next_ij_dz
+                float[] pos_list = new float[]{
+                        dx, radius * cos_theta, dz,
+                        next_i_dx, radius * cos_theta, next_i_dz,
+                        next_j_dx, radius * next_cos_theta, next_j_dz,
+                        next_ij_dx, radius * next_cos_theta, next_ij_dz
                 };
 
                 float u = 0.5F * i / segments;
-                float v = 0.125F + 0.125F*(j-Math.round(segments/4f))/Math.round(segments/2f);
-                float next_i_u = 0.5F * (i+1) / segments;
+                float v = 0.125F + 0.125F * (j - Math.round(segments / 4f)) / Math.round(segments / 2f);
+                float next_i_u = 0.5F * (i + 1) / segments;
                 float next_j_u = 0.5F * i / segments;
-                float next_j_v = 0.125F + 0.125F*(j+1-Math.round(segments/4f))/Math.round(segments/2f);
-                float next_ij_u = 0.5F * (i+1) / segments;
+                float next_j_v = 0.125F + 0.125F * (j + 1 - Math.round(segments / 4f)) / Math.round(segments / 2f);
+                float next_ij_u = 0.5F * (i + 1) / segments;
 
                 if (isInner) {
                     u += 0.5F;
@@ -151,40 +148,55 @@ public class SphereRenderer {
                     next_j_u += 0.5F;
                     next_ij_u += 0.5F;
                 }
-                float[]uv_list=new float[]{
-                        u,v,next_i_u, v,next_j_u,next_j_v,next_ij_u, next_j_v
+                float[] uv_list = new float[]{
+                        u, v, next_i_u, v, next_j_u, next_j_v, next_ij_u, next_j_v
                 };
 
-                addSideSphereQuads(vertexConsumer, pose, x, z, pos_list, uv_list, packedLight,lightmap2,overlay);
+                addSideSphereQuads(vertexConsumer, pose, x, z, pos_list, uv_list, packedLight, lightmap2, overlay);
             }
         }
     }
-    private static void addSideSphereQuads(VertexConsumer vvertexConsumer, PoseStack.Pose pose, float x, float z, float[] pos_list, float[]uv_list, int packedLight, boolean lightmap2, int overlay) {
-        vvertexConsumer.addVertex(pose, pos_list[0] + x, pos_list[1], pos_list[2] + z)
-                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
-                .setUv(uv_list[0], uv_list[1])
-                .setOverlay(overlay)
-                .setLight(packedLight)
-                .setNormal(pose, pos_list[0], pos_list[1], pos_list[2]);
-        vvertexConsumer.addVertex(pose, pos_list[3] + x, pos_list[4], pos_list[5] + z)
-                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
-                .setUv(uv_list[2], uv_list[3])
-                .setOverlay(overlay)
-                .setLight(packedLight)
-                .setNormal(pose, pos_list[3], pos_list[4], pos_list[5]);
-        vvertexConsumer.addVertex(pose, pos_list[9] + x, pos_list[10], pos_list[11] + z)
-                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
-                .setUv(uv_list[6], uv_list[7])
-                .setOverlay(overlay)
-                .setLight(packedLight)
-                .setNormal(pose, pos_list[9], pos_list[10], pos_list[11]);
-        vvertexConsumer.addVertex(pose, pos_list[6] + x, pos_list[7], pos_list[8] + z)
-                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
-                .setUv(uv_list[4], uv_list[5])
-                .setOverlay(overlay)
-                .setLight(packedLight)
-                .setNormal(pose, pos_list[6], pos_list[7], pos_list[8]);
+
+    private static void addSideSphereQuads(VertexConsumer vertexConsumer, PoseStack.Pose pose, float x, float z, float[] pos_list, float[] uv_list, int packedLight, boolean lightmap2, int overlay) {
+        addVertex(vertexConsumer, pose, pos_list[0] + x, pos_list[1], pos_list[2] + z, uv_list[0], uv_list[1], pos_list[0], pos_list[1], pos_list[2], packedLight, overlay);
+        addVertex(vertexConsumer, pose, pos_list[6] + x, pos_list[7], pos_list[8] + z, uv_list[4], uv_list[5], pos_list[6], pos_list[7], pos_list[8], packedLight, overlay);
+        addVertex(vertexConsumer, pose, pos_list[9] + x, pos_list[10], pos_list[11] + z, uv_list[6], uv_list[7], pos_list[9], pos_list[10], pos_list[11], packedLight, overlay);
+        addVertex(vertexConsumer, pose, pos_list[3] + x, pos_list[4], pos_list[5] + z, uv_list[2], uv_list[3], pos_list[3], pos_list[4], pos_list[5], packedLight, overlay);
     }
+
+    private static void addVertex(
+            VertexConsumer consumer,
+            PoseStack.Pose pose,
+            float x,
+            float y,
+            float z,
+            float u,
+            float v,
+            float nx,
+            float ny,
+            float nz,
+            int packedLight,
+            int overlay
+    ) {
+        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len > 1e-5f) {
+            nx /= len;
+            ny /= len;
+            nz /= len;
+        } else {
+            nx = 0f;
+            ny = 1f;
+            nz = 0f;
+        }
+
+        consumer.addVertex(pose, x, y, z)
+                .setColor(1.0f, 1.0f, 1.0f, 1.0f)
+                .setUv(u, v)
+                .setOverlay(overlay)
+                .setLight(packedLight)
+                .setNormal(pose, nx, ny, nz);
+    }
+
     private static float getSquareZ(float x1, float z1, float cube_size) {
         return (float) (cube_size * (0.5 * Math.sqrt(2 - x1 * x1 + z1 * z1 + 2 * Math.sqrt(2.0) * z1) - 0.5 * Math.sqrt(2 - x1 * x1 + z1 * z1 - 2 * Math.sqrt(2.0) * z1)));
     }

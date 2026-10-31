@@ -81,7 +81,7 @@ public abstract class PlayerMixin implements IPlayerData {
         return playerPosition.add(offsetX, 0, offsetZ);
     }
 
-    // 霑ｽ蜉繝・・繧ｿ繧貞酔譛溷ｯｾ雎｡縺ｨ縺励※逋ｻ骭ｲ縺吶ｋ縲・
+    // 追加データを同期対象として登録する。
     // Player コンストラクタの末尾でセグメントリストを初期化する（フィールド初期化子が展開されないため）。
     @Inject(method = "<init>", at = @At("RETURN"))
     private void snakePlayer$initSubEntities(CallbackInfo ci) {
@@ -99,7 +99,7 @@ public abstract class PlayerMixin implements IPlayerData {
         builder.define(PART_POSITIONS, new ArrayList<>());
     }
 
-    // 豈・tick 縺斐→縺ｫ髟ｷ縺墓峩譁ｰ縲∝ｺｧ讓吝酔譛溘∝ｽ薙◆繧雁愛螳壽峩譁ｰ繧定｡後≧縲・
+    // 毎 tick ごとに長さ更新、座標同期、当たり判定更新を行う。
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
         Player player = (Player)(Object)this;
@@ -117,7 +117,7 @@ public abstract class PlayerMixin implements IPlayerData {
 
 
     @Unique
-    // 繧ｵ繝ｼ繝舌・蛛ｴ縺ｧ蜷・そ繧ｰ繝｡繝ｳ繝医・霑ｽ蠕謎ｽ咲ｽｮ繧呈峩譁ｰ縺吶ｋ縲・
+    // サーバー側で各セグメントの追従位置を更新する。
     public void snakePlayer$updateServerPositions(Player player, float parts_size) {
         if(!player.level().isClientSide()){
             if(snakePlayer$subEntities.size()>0){
@@ -154,7 +154,7 @@ public abstract class PlayerMixin implements IPlayerData {
     }
 
     @Unique
-    // 繧ｵ繝ｼ繝舌・縺ｨ繧ｯ繝ｩ繧､繧｢繝ｳ繝医・髢薙〒繧ｻ繧ｰ繝｡繝ｳ繝亥ｺｧ讓吶ｒ蜷梧悄縺吶ｋ縲・
+    // サーバーとクライアントの間でセグメント座標を同期する。
     public void snakePlayer$syncPositions(Player player) {
         if(!player.level().isClientSide()){
             List<Vec3> partPositions = new ArrayList<>();
@@ -211,7 +211,7 @@ public abstract class PlayerMixin implements IPlayerData {
     }
 
     @Unique
-    // 繝懊ョ繧｣繧ｻ繧ｰ繝｡繝ｳ繝医↓隗ｦ繧後◆繧ｨ繝ｳ繝・ぅ繝・ぅ縺ｸ繝繝｡繝ｼ繧ｸ繧剃ｸ弱∴繧九・
+    // ボディセグメントに触れたエンティティへダメージを与える。
     private void snakePlayer$SetDamage(Player player) {
         float damageAmount = snakePlayer$getSnakeDamage();
         if((!player.level().isClientSide()) && (!player.isDeadOrDying())&&(!player.isSpectator())){
