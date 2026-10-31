@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 public class SphereRenderer {
     public static void drawTexturedSphere(PoseStack poseStack, SnakeRenderSink sink, Identifier texture, float radius, int segments, float x, float z, int packedLight, boolean lightmap2, int overlay) {
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(45));
+        poseStack.rotate(Axis.YP.rotationDegrees(45));
 
         sink.submit(poseStack, RenderTypes.entityTranslucent(texture), (pose, vertexConsumer) -> {
             addBottomSphere(radius, segments, x, z, vertexConsumer, pose, 0.1875F, false, packedLight, lightmap2, overlay);

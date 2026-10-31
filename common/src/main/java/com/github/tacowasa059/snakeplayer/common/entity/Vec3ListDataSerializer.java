@@ -1,7 +1,8 @@
 package com.github.tacowasa059.snakeplayer.common.entity;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.world.phys.Vec3;
@@ -9,10 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class Vec3ListDataSerializer implements EntityDataSerializer<List<Vec3>> {
-    private static final StreamCodec<RegistryFriendlyByteBuf, List<Vec3>> CODEC = StreamCodec.of(
-            (buf, value) -> buf.writeCollection(value, (b, v) -> Vec3.STREAM_CODEC.encode(b, v)),
-            buf -> buf.readList(b -> Vec3.STREAM_CODEC.decode(b))
-    );
+    private static final StreamCodec<ByteBuf, List<Vec3>> CODEC = Vec3.STREAM_CODEC.apply(ByteBufCodecs.list());
 
     @Override
     public StreamCodec<? super RegistryFriendlyByteBuf, List<Vec3>> codec() {

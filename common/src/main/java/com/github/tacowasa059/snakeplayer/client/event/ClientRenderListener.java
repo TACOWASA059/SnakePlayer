@@ -51,8 +51,8 @@ public final class ClientRenderListener {
         float viewPitch = player.getViewXRot(partialTicks);
         poseStack.pushPose();
         poseStack.translate(0, headRadius, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-viewYaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(viewPitch));
+        poseStack.rotate(Axis.YP.rotationDegrees(-viewYaw));
+        poseStack.rotate(Axis.XP.rotationDegrees(viewPitch));
         SphereRenderer.drawTexturedSphere(poseStack, sink, location, headRadius, 8, 0, 0, lightmap, true, overlay);
         poseStack.popPose();
 

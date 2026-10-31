@@ -126,7 +126,7 @@ public class HexagonalPrismRenderer {
         float yaw = (float) Math.toDegrees(Math.atan2(direction.z, direction.x));
         float pitch = (float) Math.toDegrees(Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
+        poseStack.rotate(Axis.YP.rotationDegrees(-yaw));
+        poseStack.rotate(Axis.ZP.rotationDegrees(pitch));
     }
 }
